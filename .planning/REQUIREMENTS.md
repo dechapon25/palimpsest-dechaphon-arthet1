@@ -7,10 +7,10 @@
 
 ### Security & Intake
 
-- [ ] **SEC-01**: System validates uploaded file is JPG or PNG and rejects other types
-- [ ] **SEC-02**: System rejects files exceeding a maximum size limit (e.g., 20 MB)
-- [ ] **SEC-03**: System strips EXIF metadata from uploaded image before processing
-- [ ] **SEC-04**: System treats transcribed text as data only — no re-execution of content as instructions (prompt injection defense)
+- [x] **SEC-01**: System validates uploaded file is JPG or PNG and rejects other types
+- [x] **SEC-02**: System rejects files exceeding a maximum size limit (e.g., 20 MB)
+- [x] **SEC-03**: System strips EXIF metadata from uploaded image before processing
+- [x] **SEC-04**: System treats transcribed text as data only — no re-execution of content as instructions (prompt injection defense)
 
 ### Orchestration
 
@@ -120,6 +120,7 @@
 | DOC-01 – DOC-04 | Phase 4 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 34 total
 - Mapped to phases: 34
 - Unmapped: 0 ✓

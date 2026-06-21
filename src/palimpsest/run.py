@@ -3,7 +3,7 @@
 Usage: python -m palimpsest.run <image_path>
 
 Wires load_dotenv + security intake gate + ADK pipeline + JSON output.
-Per D-13: invocable as both `python -m palimpsest.run` and `python src/palimpsest/run.py`.
+Per D-13: invocable as `python -m palimpsest.run` or `python src/palimpsest/run.py`.
 Per D-19: load_dotenv() called first, before any other logic.
 """
 
@@ -51,6 +51,15 @@ def main():
     try:
         clean_bytes, mime_type = validate_and_clean(image_path)
     except IntakeError as e:
+        result = {
+            "status": "error",
+            "raw_transcription": None,
+            "metadata": {"filename": filename, "model": None, "tokens_used": None},
+            "errors": [str(e)],
+        }
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
+    except (FileNotFoundError, OSError) as e:
         result = {
             "status": "error",
             "raw_transcription": None,

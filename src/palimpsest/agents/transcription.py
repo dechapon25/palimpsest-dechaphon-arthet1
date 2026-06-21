@@ -44,7 +44,8 @@ transcription_agent = LlmAgent(
     description="Transcribes historical handwritten manuscripts using Gemini vision.",
     output_key="raw_transcription",
     # CRITICAL: thinking_config MUST be on the planner, NOT in generate_content_config.
-    # ADK Python raises ValueError if thinking_config is placed in generate_content_config.
+    # ADK Python raises ValueError if thinking_config is placed in
+    # generate_content_config.
     # See RESEARCH.md Pitfall 2 and PATTERNS.md Landmines table.
     planner=BuiltInPlanner(
         thinking_config=types.ThinkingConfig(
@@ -55,6 +56,7 @@ transcription_agent = LlmAgent(
     generate_content_config=types.GenerateContentConfig(
         temperature=0.1,  # D-02: reduces variance on proper nouns and dates
         max_output_tokens=65536,  # D-02: prevents silent truncation of long documents
-        response_mime_type="application/json",  # Prevents markdown fence wrapping (Pitfall 5)
+        # Prevents markdown fence wrapping (Pitfall 5)
+        response_mime_type="application/json",
     ),
 )

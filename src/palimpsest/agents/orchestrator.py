@@ -60,7 +60,9 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
             role="user",
             parts=[
                 types.Part.from_bytes(data=clean_bytes, mime_type=mime_type),
-                types.Part(text="Transcribe this historical manuscript image verbatim."),
+                types.Part(
+                    text="Transcribe this historical manuscript image verbatim."
+                ),
             ],
         ),
     ):

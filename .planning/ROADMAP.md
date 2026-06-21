@@ -13,7 +13,7 @@ Palimpsest is built in four phases over 16 days. Phase 1 validates the core pipe
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: MVP Linear Pipeline** - Security intake + orchestrator + transcription agent running end-to-end on a real test image
+- [x] **Phase 1: MVP Linear Pipeline** - Security intake + orchestrator + transcription agent running end-to-end on a real test image (completed 2026-06-21)
 - [ ] **Phase 2: Full Multi-Agent System** - Cleaning agent (Agent Skill) + MCP server (4 tools) + context agent wired into orchestrator
 - [ ] **Phase 3: Verification + Gradio UI** - Confidence scoring, uncertainty highlights, and full Gradio demo interface
 - [ ] **Phase 4: Deploy + Submission Artifacts** - Cloud Run containerization, README, Kaggle Writeup, and video scaffold
@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. When Gemini returns a partial transcription (skipped lines), the orchestrator surfaces the partial result to the caller without crashing
   5. The orchestrator correctly sequences intake, transcription, and result assembly, surfacing any agent error with a descriptive message
 
-**Plans**: 1/2 plans executed
+**Plans**: 2/2 plans complete
 
 Plans:
 **Wave 1**
@@ -43,7 +43,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-02-PLAN.md — Transcription agent + ADK orchestrator + CLI runner (end-to-end)
+- [x] 01-02-PLAN.md — Transcription agent + ADK orchestrator + CLI runner (end-to-end)
 
 ### Phase 2: Full Multi-Agent System
 
@@ -99,7 +99,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. MVP Linear Pipeline | 1/2 | In Progress|  |
+| 1. MVP Linear Pipeline | 2/2 | Complete   | 2026-06-21 |
 | 2. Full Multi-Agent System | 0/TBD | Not started | - |
 | 3. Verification + Gradio UI | 0/TBD | Not started | - |
 | 4. Deploy + Submission Artifacts | 0/TBD | Not started | - |

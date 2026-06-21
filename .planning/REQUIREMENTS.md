@@ -14,15 +14,15 @@
 
 ### Orchestration
 
-- [ ] **ORC-01**: ADK root orchestrator coordinates all pipeline agents in correct order
-- [ ] **ORC-02**: Orchestrator handles agent errors and surfaces them to the user with context
-- [ ] **ORC-03**: Orchestrator assembles final structured output from all agent results
+- [x] **ORC-01**: ADK root orchestrator coordinates all pipeline agents in correct order
+- [x] **ORC-02**: Orchestrator handles agent errors and surfaces them to the user with context
+- [x] **ORC-03**: Orchestrator assembles final structured output from all agent results
 
 ### Transcription
 
-- [ ] **TRS-01**: Transcription agent sends image to Gemini 3 Pro with maxOutputTokens=65536, temperature=0.1, thinkingBudget=128
-- [ ] **TRS-02**: Transcription agent returns raw text with no post-processing
-- [ ] **TRS-03**: System handles partial transcription (Gemini skipped lines) without crashing
+- [x] **TRS-01**: Transcription agent sends image to Gemini 3 Pro with maxOutputTokens=65536, temperature=0.1, thinkingBudget=128
+- [x] **TRS-02**: Transcription agent returns raw text with no post-processing
+- [x] **TRS-03**: System handles partial transcription (Gemini skipped lines) without crashing
 
 ### Cleaning & Normalization
 

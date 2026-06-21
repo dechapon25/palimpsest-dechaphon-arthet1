@@ -20,8 +20,6 @@ Requirements in scope: SEC-01, SEC-02, SEC-03, SEC-04, ORC-01, ORC-02, ORC-03, T
 ### Gemini Model & Config
 - **D-01:** Model: `gemini-2.5-pro` (stable channel). If "Gemini 3 Pro" model ID appears in the API at time of implementation, use that — otherwise `gemini-2.5-pro` is the fallback.
 - **D-02:** Config locked: `maxOutputTokens=65536`, `temperature=0.1`, `thinkingBudget=128` — all three as-is, sourced from real production transcription experience.
-- **D-03:** API access via Google AI Studio free tier (`GOOGLE_API_KEY`). User has a Google/Gmail account. Key obtained from aistudio.google.com.
-
 ### Test Documents
 - **D-04:** Language: Spanish — PARES (Portal de Archivos Españoles). Cartas y testamentos s. XVIII-XIX.
 - **D-05:** Download 3 documents on Day 1: 1 easy cursive + 1 hard cursive + 1 with marginalia. Covers Gemini's known failure modes (TRS-03).
@@ -90,6 +88,7 @@ Requirements in scope: SEC-01, SEC-02, SEC-03, SEC-04, ORC-01, ORC-02, ORC-03, T
 - Specific PARES document selection (which cartas/testamentos to download) — researcher can find appropriate samples from pares.mcu.es.
 - Exact Ruff rule configuration — use defaults.
 - Internal session handling within ADK SequentialAgent — follow ADK docs patterns.
+- **D-03:** [informational] API access via Google AI Studio free tier (`GOOGLE_API_KEY`). User has a Google/Gmail account. Key obtained from aistudio.google.com. (Env var handling covered by D-20.)
 
 </decisions>
 

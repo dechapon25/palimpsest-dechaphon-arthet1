@@ -7,6 +7,7 @@ Palimpsest is built in four phases over 16 days. Phase 1 validates the core pipe
 ## Phases
 
 **Phase Numbering:**
+
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
@@ -20,58 +21,75 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Phase Details
 
 ### Phase 1: MVP Linear Pipeline
+
 **Goal**: A researcher can upload a manuscript image and receive raw transcribed text through a validated, security-hardened pipeline running end-to-end on a real test document.
 **Mode:** mvp
 **Depends on**: Nothing (first phase)
 **Requirements**: SEC-01, SEC-02, SEC-03, SEC-04, ORC-01, ORC-02, ORC-03, TRS-01, TRS-02, TRS-03
 **Success Criteria** (what must be TRUE):
+
   1. A JPG or PNG image uploaded to the pipeline returns transcribed text from Gemini 3 Pro with no manual intervention
   2. Files with wrong type (PDF, DOCX) or exceeding 20 MB are rejected before reaching Gemini, and EXIF metadata is stripped from accepted images
   3. Transcribed text containing instruction-like phrases is treated as data and does not alter downstream agent behavior
   4. When Gemini returns a partial transcription (skipped lines), the orchestrator surfaces the partial result to the caller without crashing
   5. The orchestrator correctly sequences intake, transcription, and result assembly, surfacing any agent error with a descriptive message
+
 **Plans**: 2 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 01-01-PLAN.md — Project scaffold + security intake (SEC-01 through SEC-04)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 01-02-PLAN.md — Transcription agent + ADK orchestrator + CLI runner (end-to-end)
 
 ### Phase 2: Full Multi-Agent System
+
 **Goal**: The pipeline gains a cleaning agent packaged as a reusable Agent Skill, a FastMCP server with four historical-context tools, and a context agent that queries those tools to enrich named entities in the cleaned text.
 **Mode:** mvp
 **Depends on**: Phase 1
 **Requirements**: CLN-01, CLN-02, CLN-03, MCP-01, MCP-02, MCP-03, MCP-04, MCP-05, MCP-06, CTX-01, CTX-02, CTX-03
 **Success Criteria** (what must be TRUE):
+
   1. Raw Gemini output passes through the cleaning agent and emerges with expanded paleographic abbreviations and normalized archaic spelling
   2. The cleaning agent is importable and callable as a standalone ADK Agent Skill (not only as an inline pipeline step)
   3. The FastMCP server responds to all four tool calls — `lookup_entity`, `normalize_date`, `expand_abbreviation`, `place_context` — using Wikidata/Wikipedia with no API key required
   4. Named entities (persons, places, dates) in the cleaned text are identified and resolved through MCP tools, returning structured historical notes
+
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 3: Verification + Gradio UI
+
 **Goal**: The system scores transcription confidence per passage, marks uncertain words with highlights, and presents all results (clean transcription, historical notes, raw/clean toggle, confidence map) through a Gradio demo interface.
 **Mode:** mvp
 **Depends on**: Phase 2
 **Requirements**: VER-01, VER-02, VER-03, UI-01, UI-02, UI-03, UI-04, UI-05
 **Success Criteria** (what must be TRUE):
+
   1. Every passage in the transcription output carries a confidence score, and individual low-confidence words or spans are explicitly flagged in the output
   2. A researcher can upload an image in the Gradio interface and see the clean transcription, historical notes panel, and color-coded uncertainty highlights — all without running code directly
   3. The raw/clean toggle in the Gradio UI lets the researcher compare the original Gemini output against the cleaned version side by side
   4. The confidence output is structured (JSON or equivalent) so the UI can render highlights programmatically — not as prose
+
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 4: Deploy + Submission Artifacts
+
 **Goal**: The application runs as a publicly accessible Cloud Run container; the repo contains no credentials; and all Kaggle submission artifacts (README, Writeup, video) are complete and ready to submit by Day 14.
 **Mode:** mvp
 **Depends on**: Phase 3
 **Requirements**: DEP-01, DEP-02, DEP-03, DEP-04, DOC-01, DOC-02, DOC-03, DOC-04
 **Success Criteria** (what must be TRUE):
+
   1. `docker build` succeeds from a clean clone, and the container starts the Gradio app without secrets hard-coded in any file in the repo
   2. The Cloud Run endpoint is publicly reachable and processes a manuscript image upload end-to-end
   3. The README documents the architecture, required environment variables (names only), and setup steps sufficient for a judge to reproduce the demo locally
   4. The Kaggle Writeup is complete (≤2500 words), has a cover image, and contains the YouTube video link; the video (≤5 min) covers problem, architecture, demo, and agent rationale
+
 **Plans**: TBD
 
 ## Progress

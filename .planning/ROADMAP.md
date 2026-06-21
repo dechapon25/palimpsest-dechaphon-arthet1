@@ -30,7 +30,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Transcribed text containing instruction-like phrases is treated as data and does not alter downstream agent behavior
   4. When Gemini returns a partial transcription (skipped lines), the orchestrator surfaces the partial result to the caller without crashing
   5. The orchestrator correctly sequences intake, transcription, and result assembly, surfacing any agent error with a descriptive message
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Project scaffold + security intake (SEC-01 through SEC-04)
+- [ ] 01-02-PLAN.md — Transcription agent + ADK orchestrator + CLI runner (end-to-end)
 
 ### Phase 2: Full Multi-Agent System
 **Goal**: The pipeline gains a cleaning agent packaged as a reusable Agent Skill, a FastMCP server with four historical-context tools, and a context agent that queries those tools to enrich named entities in the cleaned text.

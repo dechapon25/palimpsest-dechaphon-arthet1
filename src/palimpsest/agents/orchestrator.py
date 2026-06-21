@@ -77,6 +77,14 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
         session_id=session.id,
     )
 
+    if final_session is None:
+        return {
+            "status": "error",
+            "raw_transcription": None,
+            "metadata": {"filename": filename, "model": "gemini-2.5-pro", "tokens_used": None},
+            "errors": ["Failed to retrieve session after pipeline run"],
+        }
+
     raw = final_session.state.get("raw_transcription")
 
     # TRS-03: Partial transcription detection.

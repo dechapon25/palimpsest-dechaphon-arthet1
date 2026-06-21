@@ -53,16 +53,23 @@ def validate_and_clean(file_path: str) -> tuple[bytes, str]:
     # SEC-03: EXIF strip via Pillow
     # Use filetype.mime (returns "image/jpeg") NOT Pillow's Image.format ("JPEG")
     # for the MIME type returned — see Pitfall 3 in RESEARCH.md
-    img = Image.open(io.BytesIO(raw_bytes))
-    img = ImageOps.exif_transpose(img)  # apply EXIF rotation, then discard EXIF
+    try:
+        img = Image.open(io.BytesIO(raw_bytes))
+        img = ImageOps.exif_transpose(img)  # apply EXIF rotation, then discard EXIF
 
-    # Reconstruct image from pixel data only — zero metadata carried over
-    clean_img = Image.new(img.mode, img.size)
-    clean_img.putdata(list(img.getdata()))
+        # Reconstruct image from pixel data only — zero metadata carried over
+        clean_img = Image.new(img.mode, img.size)
+        clean_img.putdata(list(img.getdata()))
 
-    out_buffer = io.BytesIO()
-    fmt = "JPEG" if kind.mime == "image/jpeg" else "PNG"
-    clean_img.save(out_buffer, format=fmt)
-    clean_bytes = out_buffer.getvalue()
+        out_buffer = io.BytesIO()
+        fmt = "JPEG" if kind.mime == "image/jpeg" else "PNG"
+        clean_img.save(out_buffer, format=fmt)
+        clean_bytes = out_buffer.getvalue()
+    except Image.DecompressionBombError:
+        raise IntakeError(
+            "Image dimensions exceed safe limits (possible decompression bomb)"
+        )
+    except Exception as e:
+        raise IntakeError(f"Image validation failed: {e}") from e
 
     return clean_bytes, kind.mime  # mime_type from filetype, not Pillow

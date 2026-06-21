@@ -32,14 +32,13 @@ def validate_and_clean(file_path: str) -> tuple[bytes, str]:
     """
     path = Path(file_path)
 
-    # SEC-02: size check first (cheapest gate — reads only file metadata)
-    file_size = path.stat().st_size
-    if file_size > MAX_FILE_SIZE_BYTES:
-        raise IntakeError(
-            f"File too large: {file_size} bytes (max {MAX_FILE_SIZE_BYTES})"
-        )
-
+    # SEC-02: size check — read first, then check length to avoid TOCTOU race
+    # (file could be swapped between stat() and read_bytes() in concurrent contexts)
     raw_bytes = path.read_bytes()
+    if len(raw_bytes) > MAX_FILE_SIZE_BYTES:
+        raise IntakeError(
+            f"File too large: {len(raw_bytes)} bytes (max {MAX_FILE_SIZE_BYTES})"
+        )
 
     # SEC-01: magic-byte validation via filetype (reads first 261 bytes, no decoding)
     # NEVER use file extension; NEVER call Pillow before this check

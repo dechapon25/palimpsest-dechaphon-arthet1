@@ -12,6 +12,8 @@ TRS-03: Partial transcription detection (basic — advanced finish_reason check
 D-11: Output dict schema is frozen — do not add or remove top-level keys.
 """
 
+import json
+
 from google.adk.agents.sequential_agent import SequentialAgent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -89,7 +91,7 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
 
     # TRS-03: Partial transcription detection.
     # Basic check: if raw is None or empty, it's an error.
-    # If raw is present, mark as "ok".
+    # If raw is present and valid JSON with expected schema, mark as "ok".
     # TRS-03 advanced truncation detection via finish_reason requires direct
     # genai client access; implement in Phase 2 integration test using
     # Pattern 2 from RESEARCH.md (direct Gemini call with finish_reason check).
@@ -101,7 +103,16 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
         status = "error"
         errors.append("Transcription agent returned empty output")
     else:
-        status = "ok"
+        try:
+            parsed = json.loads(raw) if isinstance(raw, str) else raw
+            if not isinstance(parsed, dict) or "raw_text" not in parsed:
+                status = "error"
+                errors.append("Unexpected transcription schema: missing 'raw_text' key")
+            else:
+                status = "ok"
+        except (json.JSONDecodeError, TypeError):
+            status = "error"
+            errors.append("Transcription output is not valid JSON")
 
     # D-11: Output dict schema — frozen for all phases.
     # Phase 2+ agents add fields to metadata but must not remove top-level keys.

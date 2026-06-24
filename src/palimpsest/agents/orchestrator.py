@@ -1,15 +1,14 @@
 """Pipeline orchestrator for the Palimpsest transcription system.
 
-Uses ADK SequentialAgent with InMemoryRunner to run the transcription pipeline.
-Phase 2: transcription + cleaning agents in sequence. Context and verification
-agents are added in subsequent plans.
+Uses ADK SequentialAgent with InMemoryRunner to run the full Phase 2 pipeline:
+Transcription -> Cleaning -> Context enrichment.
 
 ORC-01: SequentialAgent pipeline declaration.
 ORC-02: Error handling with descriptive messages, no retries.
 ORC-03: Async execution via InMemoryRunner.run_async().
 TRS-03: Partial transcription detection (basic -- advanced finish_reason check
          via direct genai client deferred per RESEARCH.md Pattern 2).
-D-09: Agent order: Transcription -> Cleaning (-> Context in Plan 02).
+D-09: Agent order: Transcription -> Cleaning -> Context.
 D-11: Output dict schema -- original four keys frozen; new keys additive (A3).
 """
 
@@ -22,13 +21,16 @@ from google.genai import types
 
 from palimpsest.agents.transcription import transcription_agent
 from palimpsest.agents.cleaning import cleaning_agent
+from palimpsest.agents.context import context_agent
 
-# ORC-01: SequentialAgent — D-09 agent order: Transcription -> Cleaning.
-# Phase 2 Plan 02 will add ContextAgent to this list.
+# ORC-01: SequentialAgent — D-09 agent order: Transcription -> Cleaning -> Context.
 pipeline = SequentialAgent(
     name="PalimpsestPipeline",
-    sub_agents=[transcription_agent, cleaning_agent],
-    description="Transcription + cleaning pipeline for historical manuscripts",
+    sub_agents=[transcription_agent, cleaning_agent, context_agent],
+    description=(
+        "Full pipeline: transcription -> cleaning"
+        " -> context enrichment for historical manuscripts"
+    ),
 )
 
 
@@ -96,6 +98,7 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
 
     raw = final_session.state.get("raw_transcription")
     cleaned = final_session.state.get("cleaned_transcription")
+    context = final_session.state.get("context_notes")
 
     # TRS-03: Partial transcription detection.
     # Basic check: if raw is None or empty, it's an error.
@@ -122,17 +125,38 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
             status = "error"
             errors.append("Transcription output is not valid JSON")
 
+    # Parse context_notes for entity resolution stats.
+    entities_found = 0
+    entities_resolved = 0
+    if context is not None:
+        try:
+            notes = (
+                json.loads(context) if isinstance(context, str) else context
+            )
+            if isinstance(notes, list):
+                entities_found = len(notes)
+                entities_resolved = sum(
+                    1 for n in notes
+                    if isinstance(n, dict) and n.get("wikidata_id")
+                )
+        except (json.JSONDecodeError, TypeError):
+            pass
+
     # D-11: Output dict schema -- original four keys frozen.
-    # New keys (cleaned_transcription) added per Assumption A3 (additive extension).
+    # New keys added per Assumption A3 (additive extension).
     return {
         "status": status,
         "raw_transcription": raw,
         "cleaned_transcription": cleaned,
+        "context_notes": context,
         "metadata": {
             "filename": filename,
             "model": "gemini-2.5-pro",
             "cleaning_model": "gemini-2.5-flash",
-            "tokens_used": None,  # Populated in Phase 2 via usage_metadata
+            "context_model": "gemini-2.5-flash",
+            "tokens_used": None,
+            "entities_found": entities_found,
+            "entities_resolved": entities_resolved,
         },
         "errors": errors,
     }

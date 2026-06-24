@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 2
-current_phase_name: Full Multi-Agent System
+current_phase: 02
+current_phase_name: full-multi-agent-system
 status: executing
 stopped_at: Phase 2 UI-SPEC approved
-last_updated: "2026-06-24T23:32:45.859Z"
+last_updated: "2026-06-24T23:42:52.040Z"
 last_activity: 2026-06-24
-last_activity_desc: Phase 01 complete, transitioned to Phase 2
+last_activity_desc: Phase 02 execution started
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 25
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** A researcher uploads a scan of a difficult historical manuscript and gets back a readable, enriched transcription with uncertainty markers — in one pipeline, without paleography expertise.
-**Current focus:** Phase 01 — mvp-linear-pipeline
+**Current focus:** Phase 02 — full-multi-agent-system
 
 ## Current Position
 
-Phase: 2 — Full Multi-Agent System
-Plan: Not started
+Phase: 02 (full-multi-agent-system) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-06-24 — Phase 01 complete, transitioned to Phase 2
+Last activity: 2026-06-24 — Phase 02 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 01 P01 | 4m | 2 tasks | 12 files |
 | Phase 01 P02 | 8min | 2 tasks | 6 files |
+| Phase 02 P01 | 4min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,9 @@ Recent decisions affecting current work:
 - [Phase ?]: thinking_budget=128 on BuiltInPlanner, not in generate_content_config (ADK landmine)
 - [Phase ?]: D-11 output dict schema frozen: {status, raw_transcription, metadata, errors}
 - [Phase ?]: Wikimedia Commons manuscripts as test samples (PARES inaccessible)
+- [Phase ?]: CleaningAgent uses gemini-2.5-flash for text-to-text paleographic cleaning (D-02)
+- [Phase ?]: D-11 output dict extended additively with cleaned_transcription key (Assumption A3)
+- [Phase ?]: AgentTool wrapper pattern for ADK Agent Skills concept (CLN-03)
 
 ### Pending Todos
 
@@ -93,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-24T23:06:49.138Z
+Last session: 2026-06-24T23:42:52.028Z
 Stopped at: Phase 2 UI-SPEC approved
 Resume file: .planning/phases/02-full-multi-agent-system/02-UI-SPEC.md

@@ -26,9 +26,9 @@
 
 ### Cleaning & Normalization
 
-- [ ] **CLN-01**: Cleaning agent expands common paleographic abbreviations in the transcribed text
-- [ ] **CLN-02**: Cleaning agent normalizes archaic spelling to modern equivalents where unambiguous
-- [ ] **CLN-03**: Cleaning agent is packaged as a reusable Agent Skill (ADK agent skills concept)
+- [x] **CLN-01**: Cleaning agent expands common paleographic abbreviations in the transcribed text
+- [x] **CLN-02**: Cleaning agent normalizes archaic spelling to modern equivalents where unambiguous
+- [x] **CLN-03**: Cleaning agent is packaged as a reusable Agent Skill (ADK agent skills concept)
 
 ### MCP Server
 

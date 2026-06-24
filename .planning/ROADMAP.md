@@ -58,12 +58,12 @@ Plans:
   3. The FastMCP server responds to all four tool calls — `lookup_entity`, `normalize_date`, `expand_abbreviation`, `place_context` — using Wikidata/Wikipedia with no API key required
   4. Named entities (persons, places, dates) in the cleaned text are identified and resolved through MCP tools, returning structured historical notes
 
-**Plans**: 2 plans
+**Plans**: 1/2 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — Cleaning agent (AgentTool) + pipeline wiring (CLN-01, CLN-02, CLN-03)
+- [x] 02-01-PLAN.md — Cleaning agent (AgentTool) + pipeline wiring (CLN-01, CLN-02, CLN-03)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -110,6 +110,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. MVP Linear Pipeline | 2/2 | Complete    | 2026-06-21 |
-| 2. Full Multi-Agent System | 0/2 | Planning complete | - |
+| 2. Full Multi-Agent System | 1/2 | In Progress|  |
 | 3. Verification + Gradio UI | 0/TBD | Not started | - |
 | 4. Deploy + Submission Artifacts | 0/TBD | Not started | - |

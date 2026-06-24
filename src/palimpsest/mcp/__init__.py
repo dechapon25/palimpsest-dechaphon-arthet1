@@ -1,2 +1,1 @@
-# MCP server toolset — wired in Phase 2.
-# See src/palimpsest/agents/orchestrator.py for integration point.
+"""MCP server package for Palimpsest historical-context tools."""

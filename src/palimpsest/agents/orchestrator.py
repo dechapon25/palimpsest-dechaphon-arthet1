@@ -1,15 +1,16 @@
 """Pipeline orchestrator for the Palimpsest transcription system.
 
 Uses ADK SequentialAgent with InMemoryRunner to run the transcription pipeline.
-Phase 1 MVP: single sub-agent (transcription). Phase 2 adds cleaning, context,
-and verification agents to the same SequentialAgent.
+Phase 2: transcription + cleaning agents in sequence. Context and verification
+agents are added in subsequent plans.
 
 ORC-01: SequentialAgent pipeline declaration.
 ORC-02: Error handling with descriptive messages, no retries.
 ORC-03: Async execution via InMemoryRunner.run_async().
-TRS-03: Partial transcription detection (basic — advanced finish_reason check
-         via direct genai client deferred to Phase 2 per RESEARCH.md Pattern 2).
-D-11: Output dict schema is frozen — do not add or remove top-level keys.
+TRS-03: Partial transcription detection (basic -- advanced finish_reason check
+         via direct genai client deferred per RESEARCH.md Pattern 2).
+D-09: Agent order: Transcription -> Cleaning (-> Context in Plan 02).
+D-11: Output dict schema -- original four keys frozen; new keys additive (A3).
 """
 
 import json
@@ -20,12 +21,14 @@ from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
 from palimpsest.agents.transcription import transcription_agent
+from palimpsest.agents.cleaning import cleaning_agent
 
-# ORC-01: SequentialAgent — Phase 1 has one sub-agent; Phase 2 appends more.
+# ORC-01: SequentialAgent — D-09 agent order: Transcription -> Cleaning.
+# Phase 2 Plan 02 will add ContextAgent to this list.
 pipeline = SequentialAgent(
     name="PalimpsestPipeline",
-    sub_agents=[transcription_agent],
-    description="Phase 1 MVP: security intake + transcription",
+    sub_agents=[transcription_agent, cleaning_agent],
+    description="Transcription + cleaning pipeline for historical manuscripts",
 )
 
 
@@ -83,11 +86,16 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
         return {
             "status": "error",
             "raw_transcription": None,
-            "metadata": {"filename": filename, "model": "gemini-2.5-pro", "tokens_used": None},
+            "metadata": {
+                "filename": filename,
+                "model": "gemini-2.5-pro",
+                "tokens_used": None,
+            },
             "errors": ["Failed to retrieve session after pipeline run"],
         }
 
     raw = final_session.state.get("raw_transcription")
+    cleaned = final_session.state.get("cleaned_transcription")
 
     # TRS-03: Partial transcription detection.
     # Basic check: if raw is None or empty, it's an error.
@@ -114,14 +122,16 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
             status = "error"
             errors.append("Transcription output is not valid JSON")
 
-    # D-11: Output dict schema — frozen for all phases.
-    # Phase 2+ agents add fields to metadata but must not remove top-level keys.
+    # D-11: Output dict schema -- original four keys frozen.
+    # New keys (cleaned_transcription) added per Assumption A3 (additive extension).
     return {
         "status": status,
         "raw_transcription": raw,
+        "cleaned_transcription": cleaned,
         "metadata": {
             "filename": filename,
             "model": "gemini-2.5-pro",
+            "cleaning_model": "gemini-2.5-flash",
             "tokens_used": None,  # Populated in Phase 2 via usage_metadata
         },
         "errors": errors,

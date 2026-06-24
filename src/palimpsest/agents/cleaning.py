@@ -54,7 +54,7 @@ Return ONLY valid JSON with this exact schema:
 {
   "cleaned_text": "<fully cleaned transcription preserving line structure>",
   "changes": [
-    {"original": "<original token>", "expanded": "<modern form>", "reason": "<brief explanation>"},
+    {"original": "<token>", "expanded": "<modern>", "reason": "<why>"},
     ...
   ]
 }
@@ -68,7 +68,10 @@ cleaning_agent = LlmAgent(
     name="CleaningAgent",
     model="gemini-2.5-flash",
     instruction=CLEANING_INSTRUCTION,
-    description="Expands abbreviations and normalizes archaic Spanish spelling in transcribed text.",
+    description=(
+        "Expands abbreviations and normalizes archaic Spanish"
+        " spelling in transcribed text."
+    ),
     output_key="cleaned_transcription",
     # No planner/thinking_config needed for text-to-text transformation.
     generate_content_config=types.GenerateContentConfig(

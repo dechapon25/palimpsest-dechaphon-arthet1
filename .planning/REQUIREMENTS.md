@@ -32,18 +32,18 @@
 
 ### MCP Server
 
-- [ ] **MCP-01**: FastMCP server exposes `lookup_entity(name)` tool — disambiguates person/place and returns dates/description
-- [ ] **MCP-02**: FastMCP server exposes `normalize_date(text)` tool — converts archaic date formats to ISO standard
-- [ ] **MCP-03**: FastMCP server exposes `expand_abbreviation(token)` tool — resolves paleographic abbreviations
-- [ ] **MCP-04**: FastMCP server exposes `place_context(place, year)` tool — returns historical/geographic context for a toponym
-- [ ] **MCP-05**: MCP server uses Wikidata/Wikipedia as data source with no required API keys
-- [ ] **MCP-06**: MCP server is registered and callable by the context agent via ADK tool use
+- [x] **MCP-01**: FastMCP server exposes `lookup_entity(name)` tool — disambiguates person/place and returns dates/description
+- [x] **MCP-02**: FastMCP server exposes `normalize_date(text)` tool — converts archaic date formats to ISO standard
+- [x] **MCP-03**: FastMCP server exposes `expand_abbreviation(token)` tool — resolves paleographic abbreviations
+- [x] **MCP-04**: FastMCP server exposes `place_context(place, year)` tool — returns historical/geographic context for a toponym
+- [x] **MCP-05**: MCP server uses Wikidata/Wikipedia as data source with no required API keys
+- [x] **MCP-06**: MCP server is registered and callable by the context agent via ADK tool use
 
 ### Context Enrichment
 
-- [ ] **CTX-01**: Context agent identifies named entities (persons, places, dates) in the cleaned text
-- [ ] **CTX-02**: Context agent queries MCP server tools to resolve and enrich each entity
-- [ ] **CTX-03**: Context agent produces structured historical notes for enriched entities
+- [x] **CTX-01**: Context agent identifies named entities (persons, places, dates) in the cleaned text
+- [x] **CTX-02**: Context agent queries MCP server tools to resolve and enrich each entity
+- [x] **CTX-03**: Context agent produces structured historical notes for enriched entities
 
 ### Verification
 

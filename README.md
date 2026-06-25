@@ -1,45 +1,112 @@
 # Palimpsest
 
-Palimpsest is a general concept for a multi-agent system designed to help read and interpret historical handwritten documents.
+Multi-agent system that transcribes historical handwritten documents, cleans the text, and enriches it with historical context — built with Google ADK, Gemini, and FastMCP.
 
-The project focuses on a simple goal: take a scanned manuscript, produce a readable transcription, improve the clarity of that transcription, and add basic historical context while clearly marking uncertain results.
+A researcher uploads a scan of a difficult historical manuscript and gets back a readable, enriched transcription with uncertainty markers — in one pipeline, without paleography expertise.
 
-## Project overview
+Built as a [Kaggle AI Agents Capstone](https://www.kaggle.com/competitions/vibecoding-agents-capstone-project) competition entry (Freestyle track).
 
-Historical letters, registers, notebooks, and archival records are often difficult to read because of cursive writing, old spelling, abbreviations, and document degradation. Palimpsest aims to reduce that barrier by combining image understanding, transcription, normalization, and verification into one workflow.
+## How it works
 
-Rather than treating the task as a single prompt, the project is envisioned as a coordinated system where different agents handle specific responsibilities, such as:
+```
+Scanned manuscript image
+        │
+        ▼
+┌─────────────────┐
+│ Document Intake  │  Security checks, EXIF strip, format validation
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│ Transcription    │  Gemini 2.5 Pro vision reads cursive handwriting
+│ Agent            │
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│ Cleaning Agent   │  Gemini 2.5 Flash expands abbreviations,
+│ (Agent Skill)    │  normalizes archaic spelling (18th-19th c. Spanish)
+└────────┬────────┘
+         ▼
+┌─────────────────┐     ┌──────────────────────┐
+│ Context Agent    │────▶│ FastMCP Server       │
+│                  │◀────│ • lookup_entity      │
+│                  │     │ • normalize_date     │
+│                  │     │ • expand_abbreviation│
+│                  │     │ • place_context      │
+└────────┬────────┘     └──────────────────────┘
+         ▼                    (Wikidata/Wikipedia)
+┌─────────────────┐
+│ JSON Output      │  raw + cleaned + context notes + metadata
+└─────────────────┘
+```
 
-- document intake and safety checks,
-- handwriting transcription,
-- text cleanup and normalization,
-- historical context enrichment,
-- confidence review and uncertainty marking.
+## Quick start
 
-## What the project is meant to deliver
+```bash
+# Clone and setup
+git clone https://github.com/carlosapsa/palimpsest.git
+cd palimpsest
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
 
-At a very general level, Palimpsest is intended to produce:
+# Set your Gemini API key
+export GOOGLE_API_KEY=your-key-here
 
-- a transcription from a scanned historical document,
-- a cleaner and more readable text output,
-- lightweight contextual notes when useful,
-- visibility into doubtful words or passages.
+# Run on a sample manuscript
+python -m palimpsest.run data/samples/pares_easy_18c.jpg
+```
 
-## High-level architecture
+## Output
 
-The project is planned as a multi-agent pipeline with an orchestrator coordinating specialized steps. A contextual data layer can support the system by helping resolve dates, places, names, and other historically relevant references.
+JSON with three main outputs:
 
-This approach is useful because historical handwriting workflows benefit from separation of concerns: reading the text, improving it, checking it, and enriching it are related but distinct problems.
+- **raw_transcription**: Direct Gemini Pro vision transcription of the handwriting
+- **cleaned_transcription**: Abbreviations expanded (Exmo → Excelentísimo, Dn → Don, V.E. → Vuestra Excelencia), archaic spelling normalized (onze → once, immediatamente → inmediatamente)
+- **context_notes**: Named entities resolved via Wikidata/Wikipedia (persons, places, dates, institutions)
 
-## Current repository scope
+## Tech stack
 
-This repository currently contains early project documentation and concept notes.
+| Component | Technology |
+|-----------|------------|
+| Orchestration | Google ADK (Agent Development Kit) |
+| Transcription | Gemini 2.5 Pro (vision) |
+| Cleaning & Context | Gemini 2.5 Flash |
+| MCP Server | FastMCP with 4 tools |
+| Data sources | Wikidata SPARQL + Wikipedia REST API |
+| Security | EXIF stripping, file validation, prompt injection barriers (OWASP LLM01:2025) |
 
-## Repository structure
+## Project structure
 
-- [README.md](README.md): general project summary.
-- [docs/PROYECTO_PALIMPSESTO.md](docs/PROYECTO_PALIMPSESTO.md): extended project notes and planning material.
+```
+src/palimpsest/
+├── agents/
+│   ├── transcription.py    # Gemini Pro vision agent
+│   ├── cleaning.py         # Text cleaning agent + AgentTool wrapper
+│   ├── context.py          # Context enrichment agent with McpToolset
+│   └── orchestrator.py     # SequentialAgent pipeline + run_pipeline()
+├── mcp/
+│   ├── server.py           # FastMCP server with 4 historical-context tools
+│   └── abbreviations.py    # Spanish paleographic abbreviation dictionary
+├── security/
+│   └── intake.py           # Document validation and EXIF stripping
+└── run.py                  # CLI entry point
+```
+
+## Requirements
+
+- Python 3.12+
+- `GOOGLE_API_KEY` environment variable (Gemini API)
+- Internet access (Wikidata/Wikipedia lookups)
 
 ## Status
 
-Palimpsest is currently in an early definition stage. The main direction is established, while implementation details, data sources, and demonstration scope are still being refined.
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1. MVP Linear Pipeline | Transcription agent + intake security | ✓ Complete |
+| 2. Full Multi-Agent System | Cleaning + MCP server + context agent | ✓ Complete |
+| 3. Verification + Gradio UI | Confidence scoring + demo interface | Planned |
+| 4. Deploy + Submission | Cloud Run + Kaggle writeup + video | Planned |
+
+## License
+
+This project was created for the Kaggle AI Agents Capstone competition.

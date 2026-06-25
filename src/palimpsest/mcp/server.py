@@ -15,6 +15,7 @@ Run standalone: python -m palimpsest.mcp.server  (stdio transport)
 
 from __future__ import annotations
 
+import datetime
 import re
 from urllib.parse import quote as url_quote
 
@@ -182,6 +183,17 @@ def normalize_date(text: str) -> dict:
         month_name = match.group(2)
         year = int(match.group(3))
         month_num = SPANISH_MONTHS[month_name]
+        # CR-02: Validate the parsed date before producing ISO output.
+        try:
+            datetime.date(year, month_num, day)
+        except ValueError:
+            return {
+                "original": text,
+                "iso_date": None,
+                "explanation": (
+                    f"Invalid date: day={day}, month={month_num}, year={year}"
+                ),
+            }
         iso_date = f"{year:04d}-{month_num:02d}-{day:02d}"
         return {
             "original": text,

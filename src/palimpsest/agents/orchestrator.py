@@ -132,6 +132,17 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
             status = "error"
             errors.append("Transcription output is not valid JSON")
 
+    # WR-01: Validate cleaning agent output schema.
+    if cleaned is not None and isinstance(cleaned, str) and cleaned.strip():
+        try:
+            cleaned_parsed = json.loads(cleaned)
+            if not isinstance(cleaned_parsed, dict) or "cleaned_text" not in cleaned_parsed:
+                errors.append("Cleaning output missing 'cleaned_text' key")
+        except (json.JSONDecodeError, TypeError):
+            errors.append("Cleaning output is not valid JSON")
+    elif status == "ok":
+        errors.append("Cleaning agent returned no output")
+
     # Parse context_notes for entity resolution stats.
     entities_found = 0
     entities_resolved = 0

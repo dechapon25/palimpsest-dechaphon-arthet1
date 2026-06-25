@@ -25,6 +25,9 @@ from palimpsest.mcp.abbreviations import ABBREVIATIONS
 
 mcp = FastMCP("PalimpsestHistoryTools")
 
+# CR-01: Validate QID format before interpolation into SPARQL queries.
+QID_PATTERN = re.compile(r"^Q\d+$")
+
 # T-02-08: User-Agent identifies app only, no PII. Required by Wikidata/Wikipedia.
 HEADERS: dict[str, str] = {
     "User-Agent": "Palimpsest/1.0 (historical document transcription)",
@@ -89,6 +92,8 @@ def lookup_entity(name: str) -> dict:
 
         # Step 2: Take top result QID, query SPARQL for details
         qid = results[0]["id"]
+        if not QID_PATTERN.match(qid):
+            return {"found": False, "entity": name, "error": f"Invalid QID format: {qid}"}
         query = f"""
         SELECT ?itemLabel ?itemDescription
                ?birthDate ?deathDate
@@ -265,6 +270,16 @@ def place_context(place: str, year: int | None = None) -> dict:
             }
 
         qid = results[0]["id"]
+        if not QID_PATTERN.match(qid):
+            return {
+                "place": place,
+                "year": year,
+                "historical_name": None,
+                "modern_name": None,
+                "description": f"Invalid QID format: {qid}",
+                "wikidata_id": None,
+                "source_url": None,
+            }
         label = results[0].get("label", place)
 
         # Step 2: SPARQL for place details

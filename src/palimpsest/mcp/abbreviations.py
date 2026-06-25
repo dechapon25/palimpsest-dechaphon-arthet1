@@ -6,6 +6,10 @@ Used by the expand_abbreviation MCP tool for offline abbreviation resolution.
 MCP-03: Provides the local dictionary backing the expand_abbreviation tool.
 """
 
+# WR-03: Tokens that collide with common Spanish words.
+# expand_abbreviation returns "medium" confidence for these instead of "high".
+AMBIGUOUS_ABBREVIATIONS: set[str] = {"no", "q", "mo"}
+
 ABBREVIATIONS: dict[str, str] = {
     # Titles and forms of address
     "dn": "Don",

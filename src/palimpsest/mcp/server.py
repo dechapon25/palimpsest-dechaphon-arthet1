@@ -22,7 +22,7 @@ from urllib.parse import quote as url_quote
 import requests
 from mcp.server.fastmcp import FastMCP
 
-from palimpsest.mcp.abbreviations import ABBREVIATIONS
+from palimpsest.mcp.abbreviations import ABBREVIATIONS, AMBIGUOUS_ABBREVIATIONS
 
 mcp = FastMCP("PalimpsestHistoryTools")
 
@@ -226,10 +226,12 @@ def expand_abbreviation(token: str) -> dict:
     expansion = ABBREVIATIONS.get(key)
 
     if expansion is not None:
+        # WR-03: Lower confidence for tokens that collide with common words.
+        confidence = "medium" if key in AMBIGUOUS_ABBREVIATIONS else "high"
         return {
             "abbreviation": token,
             "expansion": expansion,
-            "confidence": "high",
+            "confidence": confidence,
             "source": "dictionary",
         }
 

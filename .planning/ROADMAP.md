@@ -84,7 +84,17 @@ Plans:
   3. The raw/clean toggle in the Gradio UI lets the researcher compare the original Gemini output against the cleaned version side by side
   4. The confidence output is structured (JSON or equivalent) so the UI can render highlights programmatically — not as prose
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 03-01-PLAN.md — Verification agent (LlmAgent/Flash, confidence_map) + orchestrator extension (VER-01, VER-02, VER-03)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 03-02-PLAN.md — Gradio Blocks demo interface with confidence highlights, raw/clean toggle, historical notes (UI-01 through UI-05)
+
 **UI hint**: yes
 
 ### Phase 4: Deploy + Submission Artifacts

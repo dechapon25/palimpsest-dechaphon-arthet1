@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 3
-current_phase_name: Verification + Gradio UI
+current_phase: 03
+current_phase_name: verification-gradio-ui
 status: executing
 stopped_at: Phase 03 UI-SPEC approved
-last_updated: "2026-06-25T23:07:53.599Z"
+last_updated: "2026-06-25T23:24:13.645Z"
 last_activity: 2026-06-25
-last_activity_desc: Phase 02 complete, transitioned to Phase 3
+last_activity_desc: Phase 03 execution started
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
   percent: 50
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** A researcher uploads a scan of a difficult historical manuscript and gets back a readable, enriched transcription with uncertainty markers — in one pipeline, without paleography expertise.
-**Current focus:** Phase 02 — full-multi-agent-system
+**Current focus:** Phase 03 — verification-gradio-ui
 
 ## Current Position
 
-Phase: 3 — Verification + Gradio UI
-Plan: Not started
+Phase: 03 (verification-gradio-ui) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-06-25 — Phase 02 complete, transitioned to Phase 3
+Last activity: 2026-06-25 — Phase 03 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P02 | 8min | 2 tasks | 6 files |
 | Phase 02 P01 | 4min | 2 tasks | 3 files |
 | Phase 02 P02 | 5min | 2 tasks | 5 files |
+| Phase 03 P01 | 10m | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,10 @@ Recent decisions affecting current work:
 - [Phase ?]: No response_mime_type on tool-calling agents (Pitfall 4 avoidance)
 - [Phase ?]: 46-entry Spanish paleographic abbreviation dictionary for MCP expand_abbreviation
 - [Phase ?]: Entity resolution stats parsed from context_notes JSON in orchestrator
+- [Phase ?]: D-06: confidence_map
+- [Phase ?]: 03-01: VerificationAgent pipeline integration
+- [Phase ?]: 03-01: confidence threshold
+- [Phase ?]: 03-01: pipeline order
 
 ### Pending Todos
 
@@ -102,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-25T22:37:12.136Z
+Last session: 2026-06-25T23:24:13.629Z
 Stopped at: Phase 03 UI-SPEC approved
 Resume file: .planning/phases/03-verification-gradio-ui/03-UI-SPEC.md

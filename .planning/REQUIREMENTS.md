@@ -47,9 +47,9 @@
 
 ### Verification
 
-- [ ] **VER-01**: Verification agent scores confidence per passage/sentence in the transcription
-- [ ] **VER-02**: Verification agent marks individual words or spans with low confidence
-- [ ] **VER-03**: Verification agent output includes confidence scores consumable by the UI
+- [x] **VER-01**: Verification agent scores confidence per passage/sentence in the transcription
+- [x] **VER-02**: Verification agent marks individual words or spans with low confidence
+- [x] **VER-03**: Verification agent output includes confidence scores consumable by the UI
 
 ### UI & Demo
 

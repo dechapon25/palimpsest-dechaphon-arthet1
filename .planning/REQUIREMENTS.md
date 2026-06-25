@@ -53,11 +53,11 @@
 
 ### UI & Demo
 
-- [ ] **UI-01**: Gradio interface accepts a single image file upload
-- [ ] **UI-02**: UI displays clean transcription after processing
-- [ ] **UI-03**: UI renders confidence highlights (color-coded uncertain words/spans)
-- [ ] **UI-04**: UI shows historical notes panel with context enrichment results
-- [ ] **UI-05**: UI provides raw-vs-clean toggle to compare original Gemini output with cleaned text
+- [x] **UI-01**: Gradio interface accepts a single image file upload
+- [x] **UI-02**: UI displays clean transcription after processing
+- [x] **UI-03**: UI renders confidence highlights (color-coded uncertain words/spans)
+- [x] **UI-04**: UI shows historical notes panel with context enrichment results
+- [x] **UI-05**: UI provides raw-vs-clean toggle to compare original Gemini output with cleaned text
 
 ### Deploy & Infrastructure
 

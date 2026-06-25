@@ -1,15 +1,17 @@
 """Pipeline orchestrator for the Palimpsest transcription system.
 
-Uses ADK SequentialAgent with InMemoryRunner to run the full Phase 2 pipeline:
-Transcription -> Cleaning -> Context enrichment.
+Uses ADK SequentialAgent with InMemoryRunner to run the full pipeline:
+Transcription -> Cleaning -> Context enrichment -> Confidence verification.
 
 ORC-01: SequentialAgent pipeline declaration.
 ORC-02: Error handling with descriptive messages, no retries.
 ORC-03: Async execution via InMemoryRunner.run_async().
 TRS-03: Partial transcription detection (basic -- advanced finish_reason check
          via direct genai client deferred per RESEARCH.md Pattern 2).
-D-09: Agent order: Transcription -> Cleaning -> Context.
+D-05: Agent order: Transcription -> Cleaning -> Context -> Verification (4th step, Phase 3).
 D-11: Output dict schema -- original four keys frozen; new keys additive (A3).
+D-06: confidence_map key added to return dict (Phase 3, additive per A3).
+VER-03: run_pipeline() exposes confidence_map for UI consumption.
 """
 
 import json
@@ -22,14 +24,16 @@ from google.genai import types
 from palimpsest.agents.transcription import transcription_agent
 from palimpsest.agents.cleaning import cleaning_agent
 from palimpsest.agents.context import context_agent
+from palimpsest.agents.verification import verification_agent
 
-# ORC-01: SequentialAgent — D-09 agent order: Transcription -> Cleaning -> Context.
+# ORC-01: SequentialAgent — D-05 agent order: Transcription -> Cleaning -> Context -> Verification.
+# 4th step (verification_agent) added in Phase 3 per D-05 and VER-01/VER-02/VER-03.
 pipeline = SequentialAgent(
     name="PalimpsestPipeline",
-    sub_agents=[transcription_agent, cleaning_agent, context_agent],
+    sub_agents=[transcription_agent, cleaning_agent, context_agent, verification_agent],
     description=(
         "Full pipeline: transcription -> cleaning"
-        " -> context enrichment for historical manuscripts"
+        " -> context enrichment -> confidence verification for historical manuscripts"
     ),
 )
 
@@ -44,7 +48,8 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
 
     Returns:
         D-11 dict with keys: status, raw_transcription, cleaned_transcription,
-        context_notes, metadata, errors. Original D-11 schema extended per A3.
+        context_notes, confidence_map, metadata, errors. Original D-11 keys frozen;
+        confidence_map added per D-06/A3 additive extension (Phase 3, VER-03).
     """
     session_service = InMemorySessionService()
     runner = Runner(
@@ -91,11 +96,13 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
             "raw_transcription": None,
             "cleaned_transcription": None,
             "context_notes": None,
+            "confidence_map": None,
             "metadata": {
                 "filename": filename,
                 "model": "gemini-2.5-pro",
                 "cleaning_model": "gemini-2.5-flash",
                 "context_model": "gemini-2.5-flash",
+                "verification_model": "gemini-2.5-flash",
                 "tokens_used": None,
                 "entities_found": 0,
                 "entities_resolved": 0,
@@ -106,6 +113,7 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
     raw = final_session.state.get("raw_transcription")
     cleaned = final_session.state.get("cleaned_transcription")
     context = final_session.state.get("context_notes")
+    confidence = final_session.state.get("confidence_map")
 
     # TRS-03: Partial transcription detection.
     # Basic check: if raw is None or empty, it's an error.
@@ -163,16 +171,19 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
 
     # D-11: Output dict schema -- original four keys frozen.
     # New keys added per Assumption A3 (additive extension).
+    # D-06: confidence_map key added in Phase 3 (VER-03).
     return {
         "status": status,
         "raw_transcription": raw,
         "cleaned_transcription": cleaned,
         "context_notes": context,
+        "confidence_map": confidence,
         "metadata": {
             "filename": filename,
             "model": "gemini-2.5-pro",
             "cleaning_model": "gemini-2.5-flash",
             "context_model": "gemini-2.5-flash",
+            "verification_model": "gemini-2.5-flash",
             "tokens_used": None,
             "entities_found": entities_found,
             "entities_resolved": entities_resolved,

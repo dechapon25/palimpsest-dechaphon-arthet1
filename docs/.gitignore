@@ -1,0 +1,14 @@
+# OS and editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Temporary documentation working files
+*.tmp
+*.temp
+*.bak
+*.log
+
+# Private planning document
+PROYECTO_PALIMPSESTO.md

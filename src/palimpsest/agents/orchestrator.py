@@ -43,7 +43,8 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
         filename: Original filename for metadata tracking.
 
     Returns:
-        D-11 dict: {status, raw_transcription, metadata, errors}
+        D-11 dict with keys: status, raw_transcription, cleaned_transcription,
+        context_notes, metadata, errors. Original D-11 schema extended per A3.
     """
     session_service = InMemorySessionService()
     runner = Runner(
@@ -88,10 +89,16 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
         return {
             "status": "error",
             "raw_transcription": None,
+            "cleaned_transcription": None,
+            "context_notes": None,
             "metadata": {
                 "filename": filename,
                 "model": "gemini-2.5-pro",
+                "cleaning_model": "gemini-2.5-flash",
+                "context_model": "gemini-2.5-flash",
                 "tokens_used": None,
+                "entities_found": 0,
+                "entities_resolved": 0,
             },
             "errors": ["Failed to retrieve session after pipeline run"],
         }

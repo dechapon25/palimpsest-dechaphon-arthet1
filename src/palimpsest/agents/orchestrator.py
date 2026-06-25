@@ -158,7 +158,8 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
                     if isinstance(n, dict) and n.get("wikidata_id")
                 )
         except (json.JSONDecodeError, TypeError):
-            pass
+            # WR-02: Record context parse failure instead of silently swallowing.
+            errors.append("Context notes could not be parsed as JSON")
 
     # D-11: Output dict schema -- original four keys frozen.
     # New keys added per Assumption A3 (additive extension).

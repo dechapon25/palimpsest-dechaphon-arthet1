@@ -671,19 +671,19 @@ Return ONLY a JSON array. No markdown fences. No preamble.
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Which Gradio version to pin?**
+1. **Which Gradio version to pin?** — RESOLVED: pin `gradio==5.50.0` per 03-02-PLAN.md Task 1.
    - What we know: 4.x is outdated; 5.50.0 is last stable 5.x; 6.19.0 is latest
    - What's unclear: whether gr.themes.Soft() and gr.File(type="filepath") behave identically in 5.x and 6.x
    - Recommendation: pin `gradio==5.50.0` as first choice; upgrade to 6.x only if 5.x has a blocker
 
-2. **Async vs sync Gradio handler (D-13)**
+2. **Async vs sync Gradio handler (D-13)** — RESOLVED: sync handler + asyncio.run() per D-13 and 03-02-PLAN.md Task 2.
    - What we know: asyncio.run() in sync handler works when Gradio calls from thread pool; async def handler is Gradio's preferred approach
    - What's unclear: whether the Gradio version chosen calls sync handlers in thread pool (all versions do, but verify for 5.x)
    - Recommendation: implement D-13 as specified (sync + asyncio.run()); add note in app.py that async def is an alternative if event loop issues arise
 
-3. **Verification agent token granularity**
+3. **Verification agent token granularity** — RESOLVED: whitespace-separated tokens per 03-01-PLAN.md Task 1.
    - What we know: D-02 specifies "per word/span"; instruction should say "word or short token span"
    - What's unclear: whether "word" means whitespace-separated token (simplest) or linguistic word (punctuation separate)
    - Recommendation: instruct the model to use whitespace-separated tokens; punctuation can be included with adjacent word ("word,")

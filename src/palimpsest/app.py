@@ -191,11 +191,11 @@ def transcribe_manuscript(file_path: str) -> tuple:
         )
         # Parse context_notes and confidence_map — may be JSON str or already a list
         context_list = (
-            json.loads(context_json) if isinstance(context_json, str) else (context_json or [])
+            json.loads(context_json) if isinstance(context_json, str) and context_json.strip() else (context_json or [])
         )
         confidence_list = (
             json.loads(confidence_json)
-            if isinstance(confidence_json, str)
+            if isinstance(confidence_json, str) and confidence_json.strip()
             else (confidence_json or [])
         )
     except (json.JSONDecodeError, TypeError) as exc:

@@ -325,4 +325,11 @@ with gr.Blocks(
 
 if __name__ == "__main__":
     # Pass theme here in Gradio 6.x (moved from gr.Blocks constructor in 6.0)
-    demo.launch(theme=gr.themes.Soft())
+    # server_name="0.0.0.0" required for Docker — default 127.0.0.1 is not
+    # reachable outside the container even with -p 7860:7860 port mapping.
+    # server_port reads PORT env var (Cloud Run / Oracle VM convention).
+    demo.launch(
+        theme=gr.themes.Soft(),
+        server_name="0.0.0.0",
+        server_port=int(os.environ.get("PORT", 7860)),
+    )

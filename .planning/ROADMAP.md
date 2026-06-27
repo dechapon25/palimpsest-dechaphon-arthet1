@@ -114,7 +114,20 @@ Plans:
   3. The README documents the architecture, required environment variables (names only), and setup steps sufficient for a judge to reproduce the demo locally
   4. The Kaggle Writeup is complete (≤2500 words), has a cover image, and contains the YouTube video link; the video (≤5 min) covers problem, architecture, demo, and agent rationale
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 04-01-PLAN.md — Dockerfile + .dockerignore + .env.example + app.py launch fix + local Docker smoke test (DEP-01, DEP-03, DEP-04)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 04-02-PLAN.md — Transfer image to Oracle VM + configure both firewall layers + deploy container + public access verification (DEP-02)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 04-03-PLAN.md — README architecture update + inline code comments/docstrings + Kaggle Writeup draft + YouTube video + Kaggle submission (DOC-01, DOC-02, DOC-03, DOC-04)
 
 ## Progress
 

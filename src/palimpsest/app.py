@@ -182,22 +182,24 @@ def transcribe_manuscript(file_path: str) -> tuple:
     context_json = result.get("context_notes") or "[]"
     confidence_json = result.get("confidence_map") or "[]"
 
-    raw_text = json.loads(raw_json).get("raw_text", "") if isinstance(raw_json, str) else ""
-    cleaned_text = (
-        json.loads(cleaned_json).get("cleaned_text", "")
-        if isinstance(cleaned_json, str)
-        else ""
-    )
-
-    # Parse context_notes and confidence_map — may be JSON str or already a list
-    context_list = (
-        json.loads(context_json) if isinstance(context_json, str) else (context_json or [])
-    )
-    confidence_list = (
-        json.loads(confidence_json)
-        if isinstance(confidence_json, str)
-        else (confidence_json or [])
-    )
+    try:
+        raw_text = json.loads(raw_json).get("raw_text", "") if isinstance(raw_json, str) else ""
+        cleaned_text = (
+            json.loads(cleaned_json).get("cleaned_text", "")
+            if isinstance(cleaned_json, str)
+            else ""
+        )
+        # Parse context_notes and confidence_map — may be JSON str or already a list
+        context_list = (
+            json.loads(context_json) if isinstance(context_json, str) else (context_json or [])
+        )
+        confidence_list = (
+            json.loads(confidence_json)
+            if isinstance(confidence_json, str)
+            else (confidence_json or [])
+        )
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise gr.Error(f"Pipeline output could not be parsed: {exc}") from exc
 
     # Return 5-tuple:
     #   [0] transcription_box: show cleaned_text by default (D-08 default = "Cleaned")

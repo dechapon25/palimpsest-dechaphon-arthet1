@@ -58,7 +58,7 @@ def validate_and_clean(file_path: str) -> tuple[bytes, str]:
 
         # Reconstruct image from pixel data only — zero metadata carried over
         clean_img = Image.new(img.mode, img.size)
-        clean_img.putdata(list(img.get_flattened_data()))
+        clean_img.putdata(list(img.getdata()))
 
         out_buffer = io.BytesIO()
         fmt = "JPEG" if kind.mime == "image/jpeg" else "PNG"

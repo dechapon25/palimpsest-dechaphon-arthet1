@@ -1,209 +1,293 @@
 ---
 phase: 03-verification-gradio-ui
-reviewed: 2026-06-26T00:00:00Z
+reviewed: 2026-06-27T00:00:00Z
 depth: standard
-files_reviewed: 4
+files_reviewed: 3
 files_reviewed_list:
-  - src/palimpsest/agents/verification.py
   - src/palimpsest/agents/orchestrator.py
+  - src/palimpsest/agents/verification.py
   - src/palimpsest/app.py
-  - requirements.txt
 findings:
-  critical: 3
-  warning: 6
+  critical: 2
+  warning: 5
   info: 2
-  total: 11
+  total: 9
 status: issues_found
 ---
 
 # Phase 03: Code Review Report
 
-**Reviewed:** 2026-06-26
+**Reviewed:** 2026-06-27
 **Depth:** standard
-**Files Reviewed:** 4 (+ cross-referenced `src/palimpsest/security/intake.py`, `src/palimpsest/agents/cleaning.py`)
+**Files Reviewed:** 3 (orchestrator.py, verification.py, app.py)
 **Status:** issues_found
 
 ## Summary
 
-Reviewed the Phase 3 additions: the verification agent, orchestrator extension, Gradio UI (`app.py`), and `requirements.txt`. Three blockers were found. The most severe is in `intake.py` (cross-referenced from `app.py`): `img.get_flattened_data()` is not a Pillow API method, which means the EXIF-stripping security control crashes on every image upload, making the entire pipeline non-functional. The verification agent is also missing `max_output_tokens`, violating the project's own explicit requirement stated in CLAUDE.md. And `app.py`'s JSON parsing of pipeline outputs lacks error handling, meaning LLM failures that do not set `status="error"` in the orchestrator (cleaning, context, and confidence failures) propagate as unhandled Python exceptions rather than user-visible `gr.Error` banners.
+Reviewed the three Phase 3 source files at standard depth with cross-file analysis.
+Two blockers were found. The first is a security vulnerability: `render_context_table`
+inserts LLM-generated entity values directly into a Markdown string without any
+escaping, while Gradio renders `gr.Markdown` as HTML — creating an XSS path from
+adversarial manuscript content through the context agent. The second blocker is a
+contract violation in the orchestrator: cleaning and context failures append to
+`errors` without setting `status = "error"`, so the app's error gate passes and
+the UI renders silently empty/corrupt outputs instead of raising a `gr.Error`
+banner. Five warnings cover unhandled type/value errors in rendering, missing list
+type guards before render functions, pipe character injection into the Markdown
+table, a duplicated constant, and a failure path that raises an unhandled `KeyError`
+from deep in ADK's template engine when `cleaned_transcription` is absent from
+session state.
+
+The ADK instruction template engine was inspected directly
+(`google/adk/utils/instructions_utils.py`). It uses regex-based substitution
+(`r'{+[^{}]*}+'`) and validates names against `_is_valid_state_name()` before
+substituting. Literal JSON-schema examples such as `{"word": "<token>", ...}` in
+`verification.py` are left untouched because their inner text fails the identifier
+check. The "unescaped braces" concern noted in the previous review (IN-02) is
+confirmed to be a false positive against this ADK version.
 
 ---
 
 ## Critical Issues
 
-### CR-01: `img.get_flattened_data()` is not a Pillow API method — EXIF stripping crashes on every upload
+### CR-01: XSS via unescaped LLM values in `render_context_table`
 
-**File:** `src/palimpsest/security/intake.py:61` (cross-referenced from `src/palimpsest/app.py:159`)
-**Issue:** `clean_img.putdata(list(img.get_flattened_data()))` calls a method that does not exist in Pillow. The correct Pillow API is `Image.getdata()`. Because `AttributeError` is caught by the broad `except Exception as e` block at intake.py:71 and re-raised as `IntakeError("Image validation failed: ...")`, every single image upload fails validation. Security control SEC-03 (EXIF stripping) never executes. The pipeline is completely non-functional.
-
-**Fix:**
-```python
-# Before (line 61)
-clean_img.putdata(list(img.get_flattened_data()))
-
-# After
-clean_img.putdata(list(img.getdata()))
-```
-
----
-
-### CR-02: Unhandled `JSONDecodeError` in `transcribe_manuscript` for cleaning, context, and confidence outputs
-
-**File:** `src/palimpsest/app.py:185-200`
-**Issue:** The four `json.loads()` calls on pipeline outputs have no try/except. The orchestrator's validation sets `status="error"` only for `raw_transcription` JSON failures (orchestrator.py:139). Cleaning, context, and confidence parse failures append to `errors` but leave `status="ok"` (orchestrator.py:148-151). When `app.py` passes the status gate at line 170, it then calls `json.loads()` on potentially malformed strings from those agents. Any `JSONDecodeError` or `TypeError` propagates as an unhandled exception that Gradio surfaces as a generic 500 error rather than a user-readable `gr.Error` banner.
-
-**Fix:** Wrap the four parse calls in a try/except and raise `gr.Error` on failure:
-```python
-try:
-    raw_text = json.loads(raw_json).get("raw_text", "") if isinstance(raw_json, str) else ""
-    cleaned_text = (
-        json.loads(cleaned_json).get("cleaned_text", "")
-        if isinstance(cleaned_json, str)
-        else ""
-    )
-    context_list = (
-        json.loads(context_json) if isinstance(context_json, str) else (context_json or [])
-    )
-    confidence_list = (
-        json.loads(confidence_json)
-        if isinstance(confidence_json, str)
-        else (confidence_json or [])
-    )
-except (json.JSONDecodeError, TypeError) as exc:
-    raise gr.Error(f"Pipeline output could not be parsed: {exc}") from exc
-```
-
----
-
-### CR-03: `verification_agent` missing `max_output_tokens` — output silently truncated for long manuscripts
-
-**File:** `src/palimpsest/agents/verification.py:66-79`
-**Issue:** The verification agent must emit one JSON object per space-separated token in the cleaned transcription. For a long manuscript, this array can easily exceed the model's default output token limit, causing silent mid-array truncation. The resulting truncated JSON string fails to parse in `app.py`, producing an unhandled `JSONDecodeError` (see CR-02) or an empty confidence map with no diagnostic. The project's own CLAUDE.md explicitly states: *"Token limits: Set maxOutputTokens=65536 explicitly or transcription silently truncates."* The transcription agent (transcription.py:60) already follows this requirement; the verification agent does not.
+**File:** `src/palimpsest/app.py:119-131`
+**Issue:** `render_context_table` converts all five column values with `str()` and
+inserts them directly into a Markdown table row — no `html.escape()`, no pipe
+escaping, nothing. Gradio 6.x renders `gr.Markdown` as HTML. A misbehaving MCP
+server or manuscript content that prompt-injects the context agent can produce
+entity values containing raw HTML tags (`<script>`, inline event handlers,
+`javascript:` links, `<img onerror=...>`). Those tags pass through the Markdown
+renderer to the browser and execute. The contrast with `render_confidence_html`
+(which explicitly applies `html.escape()` for the same threat model, documented
+at lines 75-78) makes this a clear, inconsistent oversight against a threat the
+codebase explicitly models (SEC-04, T-03-03, OWASP LLM01:2025).
 
 **Fix:**
 ```python
-generate_content_config=types.GenerateContentConfig(
-    temperature=0.1,
-    response_mime_type="application/json",
-    max_output_tokens=65536,  # Required: prevents silent truncation of large word arrays
-),
-```
+import html as _html
 
----
-
-## Warnings
-
-### WR-01: `float()` conversion without exception handling or range clamping in `render_confidence_html`
-
-**File:** `src/palimpsest/app.py:79`
-**Issue:** `score = float(entry.get("score", 1.0))` has no try/except. If the LLM returns a null value (JSON `null` → Python `None`) or a non-numeric string, `float(None)` or `float("high")` raises `TypeError`/`ValueError`, crashing the Gradio handler. Additionally, if the LLM returns a score outside `[0.0, 1.0]` (scores > 1.0 are plausible given the instruction wording "0.0 to 1.0" is advisory, not enforced), `opacity = round(1 - score, 2)` produces a negative value, which is invalid CSS and suppressed by browsers without visible error.
-
-**Fix:**
-```python
-try:
-    score = float(entry.get("score", 1.0))
-except (TypeError, ValueError):
-    score = 1.0  # treat unscored words as confident rather than crashing
-score = max(0.0, min(1.0, score))  # clamp to valid CSS opacity range
-```
-
----
-
-### WR-02: No type guard on `confidence_list` or `context_list` before rendering — `AttributeError` if LLM returns object instead of array
-
-**File:** `src/palimpsest/app.py:211-214`
-**Issue:** `render_confidence_html(confidence_list)` and `render_context_table(context_list)` assume their argument is a `list`. If the LLM or MCP server returns a JSON object `{}` instead of an array `[]`, `json.loads()` produces a dict. For `render_confidence_html`, `not word_scores` is `False` (non-empty dict is truthy), the loop `for entry in word_scores` iterates over dict keys (strings), and `entry.get(...)` on a string raises `AttributeError`. Neither renderer validates the type of its input.
-
-**Fix:**
-```python
-if not isinstance(confidence_list, list):
-    confidence_list = []
-if not isinstance(context_list, list):
-    context_list = []
-```
-Add these guards after the json.loads calls and before the render calls.
-
----
-
-### WR-03: Pipe characters in LLM-generated entity values corrupt the Markdown table
-
-**File:** `src/palimpsest/app.py:130`
-**Issue:** `render_context_table` inserts entity values directly into a Markdown table row:
-```python
-rows.append(f"| {entity} | {entity_type} | {description} | {dates} | {source} |")
-```
-If any value contains a `|` character (e.g., a description like `"Governor of New Spain | also known as..."` from a MCP lookup), it creates extra columns. This misaligns all subsequent rows and can truncate visible columns without any indication of data loss.
-
-**Fix:** Strip or escape pipe characters before insertion:
-```python
 def _md_cell(value: str) -> str:
-    return value.replace("|", "\\|").replace("\n", " ")
+    """Escape HTML and pipe characters for safe Markdown table cells."""
+    return _html.escape(value).replace("|", "&#124;").replace("\n", " ")
 
+# In render_context_table, replace the raw f-string with:
 rows.append(
     f"| {_md_cell(entity)} | {_md_cell(entity_type)} | "
     f"{_md_cell(description)} | {_md_cell(dates)} | {_md_cell(source)} |"
 )
 ```
 
----
-
-### WR-04: Markdown injection risk in context table — LLM-generated content rendered as HTML
-
-**File:** `src/palimpsest/app.py:115-132`
-**Issue:** `render_context_table` applies no escaping to any column value before inserting into Markdown. Gradio 6.x renders `gr.Markdown` content to HTML using the `markdown` library, which allows inline HTML by default. A misbehaving MCP server or an adversarial manuscript exploiting the context agent's LLM could inject Markdown hyperlinks, inline HTML, or image tags into the `description` or `source_url` fields. The `render_confidence_html` function correctly applies `html.escape()` for the same threat model (SEC-04, T-03-03), but `render_context_table` does not. The security posture is inconsistent.
-
-**Fix:** Escape HTML special characters in all values that go into Markdown string cells. For the `source` column, validate it is an `http(s)://` URL before including it as a link; otherwise render it as plain text.
+For the `source` column, additionally validate that the value starts with
+`https://` or `http://` before rendering it as a plain link; otherwise treat it
+as plain (escaped) text.
 
 ---
 
-### WR-05: `CONFIDENCE_THRESHOLD` duplicated in `app.py` and `verification.py` — silent drift risk
+### CR-02: Orchestrator returns `status="ok"` when cleaning or context agents fail
 
-**File:** `src/palimpsest/app.py:47` and `src/palimpsest/agents/verification.py:24`
-**Issue:** Both files independently define `CONFIDENCE_THRESHOLD = 0.7`. If the threshold is updated in `verification.py` (e.g., raised to 0.8 based on empirical calibration) without updating `app.py`, the scoring model flags more words as uncertain but the UI highlights fewer of them. The mismatch produces an invisible discrepancy between scored confidence and displayed uncertainty, with no test or assertion to catch it.
+**File:** `src/palimpsest/agents/orchestrator.py:143-152, 168-170`
+**Issue:** The orchestrator sets `status` only in the transcription validation
+block (lines 125-141). The cleaning validation block (lines 143-152) and the
+context parse block (lines 168-170) each `errors.append(...)` without ever
+setting `status = "error"`. The result is that a partial pipeline run — where
+transcription succeeded but cleaning or context failed — returns a dict with
+`"status": "ok"` and a non-empty `errors` list.
 
-**Fix:** Remove the definition from `app.py` and import it:
+`app.py` gates on `result.get("status") == "error"` (line 170). When status is
+"ok" despite cleaning failure, the gate passes. `app.py` then calls
+`json.loads("{}")` on the missing cleaned output, gets `""` for `cleaned_text`,
+and the user sees an empty transcription textbox with no error banner and no
+indication that the pipeline partially failed. A researcher can silently receive
+a blank result and assume the manuscript was illegible.
+
+**Fix:**
 ```python
-# app.py
+# orchestrator.py — cleaning block (around line 143)
+if cleaned is not None and isinstance(cleaned, str) and cleaned.strip():
+    try:
+        cleaned_parsed = json.loads(cleaned)
+        if not isinstance(cleaned_parsed, dict) or "cleaned_text" not in cleaned_parsed:
+            status = "error"
+            errors.append("Cleaning output missing 'cleaned_text' key")
+    except (json.JSONDecodeError, TypeError):
+        status = "error"
+        errors.append("Cleaning output is not valid JSON")
+elif status == "ok":
+    status = "error"
+    errors.append("Cleaning agent returned no output — pipeline halted")
+
+# orchestrator.py — context block (around line 168)
+    except (json.JSONDecodeError, TypeError):
+        status = "error"
+        errors.append("Context notes could not be parsed as JSON")
+```
+
+---
+
+## Warnings
+
+### WR-01: Unhandled `ValueError`/`TypeError` in `float()` call crashes confidence render
+
+**File:** `src/palimpsest/app.py:79`
+**Issue:** `score = float(entry.get("score", 1.0))` is unguarded. If the
+verification LLM returns a `null` value (JSON `null` → Python `None`),
+`float(None)` raises `TypeError`. If it returns a non-numeric string such as
+`"high"` or `"0.8 (uncertain)"`, `float(...)` raises `ValueError`. Either
+exception propagates out of `render_confidence_html`, through
+`transcribe_manuscript`, and surfaces as an unhandled server error rather than a
+`gr.Error` banner, crashing the entire confidence panel for all entries even if
+only one is malformed. Additionally, if the LLM returns a value outside `[0.0,
+1.0]` (e.g., `1.2`), `opacity = round(1 - score, 2)` produces a negative CSS
+value which browsers silently ignore, causing invisible span styling.
+
+**Fix:**
+```python
+try:
+    score = float(entry.get("score", 1.0))
+except (TypeError, ValueError):
+    score = 1.0  # treat malformed scores as confident; do not crash
+score = max(0.0, min(1.0, score))  # clamp to valid CSS opacity range
+```
+
+---
+
+### WR-02: No type guard on `confidence_list`/`context_list` before render calls
+
+**File:** `src/palimpsest/app.py:193-215`
+**Issue:** After the `json.loads()` calls, `context_list` and `confidence_list`
+are passed directly to `render_context_table` and `render_confidence_html`
+respectively. Both functions are typed as `list[dict]` and contain `for entry in
+word_scores` / `for note in context_notes` loops. If the LLM returns a JSON
+object (`{}`) instead of a JSON array (`[]`) — a plausible LLM formatting failure
+— `json.loads()` returns a `dict`. A non-empty dict is truthy, so the early
+`if not word_scores:` guard passes. The loop then iterates over the dict's string
+keys, and `entry.get("word", "")` on a string raises `AttributeError`, crashing
+the handler.
+
+**Fix:**
+```python
+# Add immediately after the json.loads block, before render calls:
+if not isinstance(context_list, list):
+    context_list = []
+if not isinstance(confidence_list, list):
+    confidence_list = []
+```
+
+---
+
+### WR-03: Pipe characters in LLM-generated values corrupt the Markdown table
+
+**File:** `src/palimpsest/app.py:130`
+**Issue:** All five column values (`entity`, `entity_type`, `description`,
+`dates`, `source`) are interpolated into a Markdown table row using a bare
+f-string. If any value contains a `|` character — common in historical
+descriptions such as `"Governor of New Spain | also known as..."` from a MCP
+lookup — it creates extra columns, misaligns every following row, and silently
+truncates visible data. Newlines in LLM-generated descriptions also split the
+Markdown table row across multiple lines, breaking the table parser.
+
+This finding is partially subsumed by CR-01's fix (the `_md_cell` helper should
+also replace `|` and `\n`), but is called out separately because it is a data
+integrity failure independent of the XSS path.
+
+**Fix:** See the `_md_cell` helper under CR-01, which handles both pipe and
+newline escaping alongside HTML escaping.
+
+---
+
+### WR-04: `CONFIDENCE_THRESHOLD` duplicated in two modules — silent drift risk
+
+**File:** `src/palimpsest/agents/verification.py:24` and `src/palimpsest/app.py:47`
+**Issue:** Both files independently define `CONFIDENCE_THRESHOLD = 0.7`. The
+comment in `app.py` says it "mirrors" the other. If the threshold is updated in
+`verification.py` based on empirical calibration (e.g., raised to `0.8`) without
+updating `app.py`, the verification LLM flags more words uncertain but the UI
+highlights fewer — an invisible discrepancy. No test or import enforces the
+invariant.
+
+**Fix:**
+```python
+# Remove from app.py line 47 and replace with:
 from palimpsest.agents.verification import CONFIDENCE_THRESHOLD
 ```
 
 ---
 
-### WR-06: Orchestrator returns `status="ok"` when cleaning agent produces no output
+### WR-05: `KeyError` from ADK template engine when `cleaned_transcription` absent from session state
 
-**File:** `src/palimpsest/agents/orchestrator.py:151-152`
-**Issue:** When `cleaned` is `None` (cleaning agent returned nothing) and transcription succeeded, the orchestrator appends to `errors` but keeps `status="ok"`. This passes `app.py`'s error gate at line 170. The verification agent's instruction then receives `cleaned_transcription = None` in session state. Depending on how ADK substitutes `{cleaned_transcription}` into the instruction template (verification.py:36), the LLM is asked to parse "None" as JSON. This produces an empty or malformed `confidence_map` downstream, and the user sees the confidence map section silently blank with no indication of what failed.
+**File:** `src/palimpsest/agents/verification.py:36`, `src/palimpsest/agents/orchestrator.py:151-152`
+**Issue:** `VERIFICATION_INSTRUCTION` contains `{cleaned_transcription}` (line
+36). ADK's `inject_session_state` (confirmed in
+`google/adk/utils/instructions_utils.py:122`) raises `KeyError: 'Context
+variable not found: cleaned_transcription'` when the key is absent from session
+state. This occurs when the cleaning agent fails and does not write its
+`output_key` — a case that is now possible given the status logic gap in CR-02.
+The `SequentialAgent` does not short-circuit on individual agent failures, so
+the verification agent still executes. The `KeyError` propagates from inside the
+ADK runner and surfaces as an unhandled exception from `runner.run_async()` in
+`orchestrator.run_pipeline()`, which has no except block around the runner call.
 
-**Fix:** Treat missing cleaning output as a pipeline error to halt early and surface a clear message:
+**Fix (two-part):**
+
+1. Fix CR-02 so that cleaning failures set `status="error"` and the orchestrator
+   returns before the UI renders anything. This eliminates the primary path.
+
+2. Make `{cleaned_transcription}` optional in the instruction template using ADK's
+   optional syntax to avoid a hard crash if the key is missing:
 ```python
-elif status == "ok":
-    status = "error"  # downgrade; can't verify without cleaned text
-    errors.append("Cleaning agent returned no output — pipeline halted")
+# verification.py line 36 — use {cleaned_transcription?} for optional substitution
+INPUT DATA (cleaned transcription JSON from the previous pipeline agent):
+{cleaned_transcription?}
 ```
+   With the `?` suffix, ADK substitutes an empty string when the key is absent
+   instead of raising `KeyError`.
 
 ---
 
 ## Info
 
-### IN-01: `requests` dependency is unpinned
+### IN-01: Model name strings hardcoded in metadata rather than sourced from agent objects
 
-**File:** `requirements.txt:6`
-**Issue:** `requests>=2.28.0` accepts any future major version, while all other dependencies are pinned to exact versions. On a fresh install months from now, `pip` could resolve `requests 3.x` if released, which may have breaking API changes that affect the MCP server or other networking code.
+**File:** `src/palimpsest/agents/orchestrator.py:102-106`
+**Issue:** The metadata dict uses string literals `"gemini-2.5-pro"`,
+`"gemini-2.5-flash"` that are independent copies of the model names defined in
+the individual agent modules. If any agent's model is updated, the metadata will
+silently diverge, producing misleading audit logs.
 
-**Fix:** Pin to a tested version:
-```
-requests==2.32.3
+**Fix:**
+```python
+from palimpsest.agents.transcription import transcription_agent
+from palimpsest.agents.cleaning import cleaning_agent
+from palimpsest.agents.context import context_agent
+from palimpsest.agents.verification import verification_agent
+
+# In run_pipeline metadata:
+"model": transcription_agent.model,
+"cleaning_model": cleaning_agent.model,
+"context_model": context_agent.model,
+"verification_model": verification_agent.model,
 ```
 
 ---
 
-### IN-02: Verification agent uses template variable injection pattern inconsistent with other agents
+### IN-02: `asyncio.run()` inside Gradio sync handler — pattern fragility
 
-**File:** `src/palimpsest/agents/verification.py:35-36`
-**Issue:** `verification.py` injects session state into the system prompt via `{cleaned_transcription}` template substitution. The three other agents (cleaning, context, transcription) describe the state key in prose and rely on ADK's conversation mechanism — they do not use template variables. This is a novel pattern in this codebase. If ADK's template substitution behavior changes in a future version, or if the substitution mechanism does not handle the JSON string's curly braces correctly in some edge case, the verification agent would silently send a literal `{cleaned_transcription}` string to the model while the others remain unaffected. The pattern should be documented or harmonized.
+**File:** `src/palimpsest/app.py:167`
+**Issue:** `asyncio.run(run_pipeline(...))` is called inside a synchronous Gradio
+click handler. This is safe today because Gradio 6.x runs sync handlers in a
+thread pool where no event loop is active. If the handler is ever converted to
+`async def` (which Gradio 6.x supports natively), `asyncio.run()` would raise
+`RuntimeError: This event loop is already running`. The comment at line 166
+acknowledges the assumption but future contributors may not notice it.
+
+**Suggestion:** Document the constraint with a more prominent comment or use
+`asyncio.new_event_loop().run_until_complete(...)` for defensive safety — though
+the current form is functionally correct in Gradio's thread pool.
 
 ---
 
-_Reviewed: 2026-06-26_
+_Reviewed: 2026-06-27_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_

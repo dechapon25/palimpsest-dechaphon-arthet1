@@ -75,5 +75,6 @@ verification_agent = LlmAgent(
     generate_content_config=types.GenerateContentConfig(
         temperature=0.1,  # Lower than cleaning (0.2) — deterministic scoring
         response_mime_type="application/json",  # JSON mode safe without callable integrations
+        max_output_tokens=65536,  # CLAUDE.md constraint: prevents silent truncation of long confidence_map arrays
     ),
 )

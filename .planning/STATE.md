@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 4
-current_phase_name: Deploy + Submission Artifacts
+current_phase: 04
+current_phase_name: deploy-submission-artifacts
 status: executing
-stopped_at: Phase 4 context gathered
-last_updated: "2026-06-27T21:56:34.652Z"
+stopped_at: "Completed 04-01: container foundation (Dockerfile, .dockerignore, .env.example, app.py fix)"
+last_updated: "2026-06-27T22:46:47.789Z"
 last_activity: 2026-06-27
-last_activity_desc: Phase 03 complete, transitioned to Phase 4
+last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 10
+  completed_plans: 8
   percent: 75
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** A researcher uploads a scan of a difficult historical manuscript and gets back a readable, enriched transcription with uncertainty markers — in one pipeline, without paleography expertise.
-**Current focus:** Phase 03 — verification-gradio-ui
+**Current focus:** Phase 04 — deploy-submission-artifacts
 
 ## Current Position
 
-Phase: 4 — Deploy + Submission Artifacts
-Plan: Not started
+Phase: 04 (deploy-submission-artifacts) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-06-27 — Phase 03 complete, transitioned to Phase 4
+Last activity: 2026-06-27 — Phase 04 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P01 | 10m | 2 tasks | 2 files |
 | Phase 03 P02 | 9m | 2 tasks | 2 files |
 | Phase 03 P03 | 1m | 2 tasks | 2 files |
+| Phase 04 P01 | 3m | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -112,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-27T21:56:34.646Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-deploy-submission-artifacts/04-CONTEXT.md
+Last session: 2026-06-27T22:46:47.780Z
+Stopped at: Completed 04-01: container foundation (Dockerfile, .dockerignore, .env.example, app.py fix)
+Resume file: .planning/phases/04-deploy-submission-artifacts/04-01-SUMMARY.md

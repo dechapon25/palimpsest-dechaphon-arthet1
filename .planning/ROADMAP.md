@@ -114,12 +114,12 @@ Plans:
   3. The README documents the architecture, required environment variables (names only), and setup steps sufficient for a judge to reproduce the demo locally
   4. The Kaggle Writeup is complete (≤2500 words), has a cover image, and contains the YouTube video link; the video (≤5 min) covers problem, architecture, demo, and agent rationale
 
-**Plans**: 3 plans
+**Plans**: 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — Dockerfile + .dockerignore + .env.example + app.py launch fix + local Docker smoke test (DEP-01, DEP-03, DEP-04)
+- [x] 04-01-PLAN.md — Dockerfile + .dockerignore + .env.example + app.py launch fix + local Docker smoke test (DEP-01, DEP-03, DEP-04)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -139,4 +139,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. MVP Linear Pipeline | 2/2 | Complete    | 2026-06-21 |
 | 2. Full Multi-Agent System | 2/2 | Complete    | 2026-06-24 |
 | 3. Verification + Gradio UI | 3/3 | Complete    | 2026-06-25 |
-| 4. Deploy + Submission Artifacts | 0/TBD | Not started | - |
+| 4. Deploy + Submission Artifacts | 1/3 | In Progress|  |

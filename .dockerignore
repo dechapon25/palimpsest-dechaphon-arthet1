@@ -1,0 +1,25 @@
+# Critical: .env must be excluded from the Docker build context.
+# If .env enters the build context, `docker history` can expose it even if
+# it is never COPYed — a DEP-03 / T-04-02 violation.
+.env
+.env.*
+
+# Version control
+.git/
+.gitignore
+
+# Python cache artifacts
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+.venv/
+
+# Planning artifacts (internal, not part of deployable application)
+.planning/
+
+# Documentation (not needed at runtime)
+docs/
+tests/
+*.md

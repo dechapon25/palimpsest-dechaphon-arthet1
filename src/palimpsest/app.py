@@ -189,17 +189,31 @@ def transcribe_manuscript(file_path: str) -> tuple:
             if isinstance(cleaned_json, str)
             else ""
         )
-        # Parse context_notes and confidence_map — may be JSON str or already a list
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise gr.Error(f"Pipeline output could not be parsed: {exc}") from exc
+
+    # Context and confidence are optional — parse failures default to empty list
+    try:
         context_list = (
-            json.loads(context_json) if isinstance(context_json, str) and context_json.strip() else (context_json or [])
+            json.loads(context_json)
+            if isinstance(context_json, str) and context_json.strip()
+            else (context_json or [])
         )
+        if not isinstance(context_list, list):
+            context_list = []
+    except (json.JSONDecodeError, TypeError):
+        context_list = []
+
+    try:
         confidence_list = (
             json.loads(confidence_json)
             if isinstance(confidence_json, str) and confidence_json.strip()
             else (confidence_json or [])
         )
-    except (json.JSONDecodeError, TypeError) as exc:
-        raise gr.Error(f"Pipeline output could not be parsed: {exc}") from exc
+        if not isinstance(confidence_list, list):
+            confidence_list = []
+    except (json.JSONDecodeError, TypeError):
+        confidence_list = []
 
     # Return 5-tuple:
     #   [0] transcription_box: show cleaned_text by default (D-08 default = "Cleaned")

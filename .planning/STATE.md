@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 04
 current_phase_name: deploy-submission-artifacts
 status: executing
-stopped_at: "Completed 04-01: container foundation (Dockerfile, .dockerignore, .env.example, app.py fix)"
-last_updated: "2026-06-27T22:46:47.789Z"
+stopped_at: "Completed 04-02: Oracle VM deploy + public access verification (http://144.21.40.193:7860/)"
+last_updated: "2026-06-27T23:57:41.018Z"
 last_activity: 2026-06-27
 last_activity_desc: Phase 04 execution started
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 75
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-06-21)
 ## Current Position
 
 Phase: 04 (deploy-submission-artifacts) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-06-27 — Phase 04 execution started
 
@@ -65,6 +65,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03 P02 | 9m | 2 tasks | 2 files |
 | Phase 03 P03 | 1m | 2 tasks | 2 files |
 | Phase 04 P01 | 3m | 2 tasks | 4 files |
+| Phase 04 P02 | 60min | 2 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,9 @@ Recent decisions affecting current work:
 - [Phase ?]: 03-01: pipeline order
 - [Phase ?]: gradio==6.19.0 used instead of planned 5.50.0 — Pillow 12.x compatibility (Rule 3 auto-fix)
 - [Phase ?]: 03-02: theme=gr.themes.Soft() passed to demo.launch() per Gradio 6.x API
+- [Phase ?]: 04-02: IP-based URL http://144.21.40.193:7860/ confirmed for Kaggle submission
+- [Phase ?]: 04-02: Oracle dual-firewall: OS firewalld AND OCI Console security list BOTH required (RESEARCH.md Pitfall 3)
+- [Phase ?]: 04-02: FastMCP stdio subprocess working on Oracle VM — PYTHONUNBUFFERED=1 from Dockerfile sufficient
 
 ### Pending Todos
 
@@ -113,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-27T22:46:47.780Z
-Stopped at: Completed 04-01: container foundation (Dockerfile, .dockerignore, .env.example, app.py fix)
-Resume file: .planning/phases/04-deploy-submission-artifacts/04-01-SUMMARY.md
+Last session: 2026-06-27T23:57:41.005Z
+Stopped at: Completed 04-02: Oracle VM deploy + public access verification (http://144.21.40.193:7860/)
+Resume file: .planning/phases/04-deploy-submission-artifacts/04-02-SUMMARY.md

@@ -114,7 +114,7 @@ Plans:
   3. The README documents the architecture, required environment variables (names only), and setup steps sufficient for a judge to reproduce the demo locally
   4. The Kaggle Writeup is complete (≤2500 words), has a cover image, and contains the YouTube video link; the video (≤5 min) covers problem, architecture, demo, and agent rationale
 
-**Plans**: 1/3 plans executed
+**Plans**: 2/3 plans executed
 
 Plans:
 **Wave 1**
@@ -123,7 +123,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04-02-PLAN.md — Transfer image to Oracle VM + configure both firewall layers + deploy container + public access verification (DEP-02)
+- [x] 04-02-PLAN.md — Transfer image to Oracle VM + configure both firewall layers + deploy container + public access verification (DEP-02)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -139,4 +139,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. MVP Linear Pipeline | 2/2 | Complete    | 2026-06-21 |
 | 2. Full Multi-Agent System | 2/2 | Complete    | 2026-06-24 |
 | 3. Verification + Gradio UI | 3/3 | Complete    | 2026-06-25 |
-| 4. Deploy + Submission Artifacts | 1/3 | In Progress|  |
+| 4. Deploy + Submission Artifacts | 2/3 | In Progress|  |

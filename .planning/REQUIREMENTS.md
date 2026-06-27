@@ -62,7 +62,7 @@
 ### Deploy & Infrastructure
 
 - [x] **DEP-01**: Application is containerized (Dockerfile) for Cloud Run deploy
-- [ ] **DEP-02**: Application is deployed to Cloud Run as a publicly accessible endpoint
+- [x] **DEP-02**: Application is deployed to Cloud Run as a publicly accessible endpoint
 - [x] **DEP-03**: All credentials loaded from environment variables; no secrets in code or repo
 - [x] **DEP-04**: `.env.example` documents required environment variable names without values
 

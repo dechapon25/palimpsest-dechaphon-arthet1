@@ -84,7 +84,7 @@ Plans:
   3. The raw/clean toggle in the Gradio UI lets the researcher compare the original Gemini output against the cleaned version side by side
   4. The confidence output is structured (JSON or equivalent) so the UI can render highlights programmatically — not as prose
 
-**Plans**: 2/2 plans complete
+**Plans**: 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -94,6 +94,10 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 03-02-PLAN.md — Gradio Blocks demo interface with confidence highlights, raw/clean toggle, historical notes (UI-01 through UI-05)
+
+**Wave 3** *(gap closure — blocked on Wave 2 completion)*
+
+- [x] 03-03-PLAN.md — Gap closure: max_output_tokens=65536 in verification.py (CR-03) + json.loads try/except in app.py (CR-02)
 
 **UI hint**: yes
 
@@ -121,5 +125,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. MVP Linear Pipeline | 2/2 | Complete    | 2026-06-21 |
 | 2. Full Multi-Agent System | 2/2 | Complete    | 2026-06-24 |
-| 3. Verification + Gradio UI | 2/2 | Complete   | 2026-06-25 |
+| 3. Verification + Gradio UI | 3/3 | Complete   | 2026-06-25 |
 | 4. Deploy + Submission Artifacts | 0/TBD | Not started | - |

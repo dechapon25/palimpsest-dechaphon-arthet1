@@ -152,11 +152,19 @@ def render_confidence_html(word_scores: list[dict]) -> str:
 
     parts = []
     for entry in word_scores:
+        if not isinstance(entry, dict):
+            continue  # skip null / non-dict elements from LLM (CR-03)
         # SEC-04 / T-03-03: escape both word and reason to prevent XSS from
         # LLM-generated strings inserted into HTML attribute and content contexts.
         escaped_word = html.escape(str(entry.get("word", "")))
         escaped_reason = html.escape(str(entry.get("reason", "")))
-        score = float(entry.get("score", 1.0))
+        # CR-01: entry.get("score") returns None when score is JSON null;
+        # float(None) raises TypeError, so treat None as fully-confident 1.0.
+        score_raw = entry.get("score")
+        try:
+            score = float(score_raw) if score_raw is not None else 1.0
+        except (TypeError, ValueError):
+            score = 1.0  # treat unparseable score as fully confident
 
         if score < CONFIDENCE_THRESHOLD:
             # opacity = 1 - score; brighter orange = more uncertain (D-15)
@@ -174,6 +182,11 @@ def render_confidence_html(word_scores: list[dict]) -> str:
 
     body = " ".join(parts)
     return f'<div style="font-size:16px;line-height:1.5;font-family:inherit">{body}</div>'
+
+
+def _md_cell(value: str) -> str:
+    """Escape Markdown table special characters in a single cell value (WR-01)."""
+    return value.replace("|", "\\|").replace("\n", " ").replace("\r", "")
 
 
 def render_context_table(context_notes: list[dict]) -> str:
@@ -197,6 +210,8 @@ def render_context_table(context_notes: list[dict]) -> str:
     rows = []
 
     for note in context_notes:
+        if not isinstance(note, dict):
+            continue  # skip null / non-dict elements from LLM (CR-03)
         entity = str(note.get("entity", ""))
         entity_type = str(note.get("type", ""))
         description = str(note.get("description", ""))
@@ -207,12 +222,15 @@ def render_context_table(context_notes: list[dict]) -> str:
         source = str(
             note.get("source_url") or note.get("wikidata_id") or ""
         )
-        rows.append(f"| {entity} | {entity_type} | {description} | {dates} | {source} |")
+        rows.append(
+            f"| {_md_cell(entity)} | {_md_cell(entity_type)} | "
+            f"{_md_cell(description)} | {_md_cell(dates)} | {_md_cell(source)} |"
+        )
 
     return header + "\n" + separator + "\n" + "\n".join(rows)
 
 
-def transcribe_manuscript(file_path: str) -> tuple:
+async def transcribe_manuscript(file_path: str) -> tuple:
     """Gradio click handler: validate image, run pipeline, return UI outputs.
 
     Accepts a plain str file path from gr.File(type="filepath") in Gradio 5+/6+.
@@ -242,9 +260,10 @@ def transcribe_manuscript(file_path: str) -> tuple:
 
     filename = os.path.basename(file_path)
 
-    # D-13: run_pipeline() is async; call via asyncio.run() in this sync handler.
-    # Safe inside Gradio's thread pool — no existing event loop in worker threads.
-    result = asyncio.run(run_pipeline(clean_bytes, mime_type, filename))
+    # WR-02: handler is now async; await run_pipeline() directly.
+    # Gradio 4+ accepts coroutines as fn= arguments natively, so asyncio.run()
+    # is no longer needed and would raise RuntimeError in embedded-loop contexts.
+    result = await run_pipeline(clean_bytes, mime_type, filename)
 
     # D-11 (UI errors): surface pipeline errors as gr.Error pop-up.
     if result.get("status") == "error":
@@ -263,13 +282,19 @@ def transcribe_manuscript(file_path: str) -> tuple:
     confidence_json = result.get("confidence_map") or "[]"
 
     try:
-        raw_text = json.loads(raw_json).get("raw_text", "") if isinstance(raw_json, str) else ""
-        cleaned_text = (
-            json.loads(cleaned_json).get("cleaned_text", "")
-            if isinstance(cleaned_json, str)
-            else ""
-        )
-    except (json.JSONDecodeError, TypeError) as exc:
+        raw_parsed = json.loads(raw_json) if isinstance(raw_json, str) else {}
+        if not isinstance(raw_parsed, dict):
+            raise gr.Error("Pipeline returned unexpected transcription format.")
+        raw_text = raw_parsed.get("raw_text", "")
+
+        cleaned_parsed = json.loads(cleaned_json) if isinstance(cleaned_json, str) else {}
+        if not isinstance(cleaned_parsed, dict):
+            cleaned_text = ""
+        else:
+            cleaned_text = cleaned_parsed.get("cleaned_text", "")
+    except gr.Error:
+        raise
+    except (json.JSONDecodeError, TypeError, AttributeError) as exc:
         raise gr.Error(f"Pipeline output could not be parsed: {exc}") from exc
 
     # Context and confidence are optional — parse failures default to empty list

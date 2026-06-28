@@ -115,6 +115,11 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
     context = final_session.state.get("context_notes")
     confidence = final_session.state.get("confidence_map")
 
+    def _strip_md_fences(s: str) -> str:
+        """Strip ```json ... ``` or ``` ... ``` markdown fences from LLM output."""
+        import re as _re
+        return _re.sub(r"^```(?:json)?\s*\n?", "", _re.sub(r"\n?```\s*$", "", s.strip()))
+
     # TRS-03: Partial transcription detection.
     # Basic check: if raw is None or empty, it's an error.
     # If raw is present and valid JSON with expected schema, mark as "ok".
@@ -140,7 +145,16 @@ async def run_pipeline(clean_bytes: bytes, mime_type: str, filename: str) -> dic
             status = "error"
             errors.append("Transcription output is not valid JSON")
 
-    # WR-01: Validate cleaning agent output schema.
+    # Strip markdown fences from LLM outputs before JSON parsing.
+    # Gemini 2.5 Flash wraps JSON in ```json ... ``` despite explicit instructions.
+    if isinstance(context, str):
+        context = _strip_md_fences(context)
+    if isinstance(confidence, str):
+        confidence = _strip_md_fences(confidence)
+    if isinstance(cleaned, str):
+        cleaned = _strip_md_fences(cleaned)
+
+    # WR-01: Validate cleaning agent output schema (post-strip).
     if cleaned is not None and isinstance(cleaned, str) and cleaned.strip():
         try:
             cleaned_parsed = json.loads(cleaned)

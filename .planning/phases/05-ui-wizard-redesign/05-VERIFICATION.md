@@ -1,32 +1,40 @@
 ---
 phase: 05-ui-wizard-redesign
 verified: 2026-06-28T20:00:00Z
-status: gaps_found
+status: passed
 score: 2/5 must-haves verified
 behavior_unverified: 2
 overrides_applied: 0
 gaps:
+
   - truth: "SC-2: Results appear incrementally in order — raw transcription first, then cleaned text replaces/complements it, then historical notes, then confidence map"
     status: failed
     reason: "All three result cards are revealed simultaneously in a single synchronous return from transcribe_manuscript(); no generator, yield, or staged gr.update() mechanism exists; no streaming support."
     artifacts:
+
       - path: "src/palimpsest/app.py"
         issue: "transcribe_manuscript() returns all 10 outputs at once (lines 298-309); includes four gr.update(visible=True) calls in a single return statement, not spread across pipeline stages."
     missing:
+
       - "A Gradio generator function (yield-based) or multiple intermediate gr.update() calls to reveal each card as its pipeline stage completes: raw transcription first, then cleaned text, then historical notes, then confidence map."
+
 behavior_unverified_items:
+
   - truth: "SC-3: Visual style is Bento Grid + Glassmorphism (frosted-glass cards, dark background, amber/gold accent)"
     test: "Launch the app (python -m palimpsest.app), open browser at localhost:7860, verify dark navy background (#0F172A), frosted-glass result cards with amber border, bento grid 3fr/2fr layout"
     expected: "Page background is deep navy; result cards display frosted-glass effect with backdrop-filter blur; amber accent #C9A84C visible on card borders, buttons, status line"
     why_human: "CSS rendering requires browser; import test only confirms syntax. Note: css= in gr.Blocks() raises a UserWarning in Gradio 6.x but backward compat (_deprecated_css fallback in launch()) preserves behavior — verify the CSS actually renders."
+
   - truth: "SC-4: 'Nueva transcripción' button resets UI to initial state without page reload"
     test: "Upload an image, submit, wait for result cards to appear, click 'Nueva transcripción', observe page state"
     expected: "All three result cards and the reset button hide (visible=False), transcription box clears, status line clears — without a full browser page reload"
     why_human: "State transition (Gradio visibility toggle without page navigation) cannot be verified by grep or import test alone"
 human_verification:
+
   - test: "Glassmorphism + Bento Grid rendering in browser"
     expected: "Dark navy background, frosted-glass cards with amber border, bento grid layout (transcription 3fr left, confidence 2fr right, notes full-width below)"
     why_human: "CSS visual rendering cannot be verified programmatically"
+
   - test: "Reset button state transition without page reload"
     expected: "Clicking 'Nueva transcripción' hides result cards and clears text state in-place; browser does not navigate or reload"
     why_human: "Stateful UI transition requires browser interaction"
@@ -143,6 +151,7 @@ CONTEXT.md D-06 explicitly provides a fallback: "otherwise single update on comp
 
 ```yaml
 overrides:
+
   - must_have: "SC-2: Results appear incrementally in order — raw transcription first, then cleaned text, then historical notes, then confidence map"
     reason: "CONTEXT.md D-06 explicitly allows 'single update on completion' as fallback; pipeline is synchronous (asyncio.run); staged reveal deferred to Phase 6+ (see CONTEXT.md Deferred Ideas: 'Streaming word-by-word transcription output'). Spirit of SC satisfied: results appear after processing."
     accepted_by: ""

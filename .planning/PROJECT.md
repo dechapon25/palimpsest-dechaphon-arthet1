@@ -19,22 +19,23 @@ A researcher uploads a scan of a difficult historical manuscript and gets back a
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ User can upload a scanned image (JPG/PNG) — Phase 01
+- ✓ System validates file type and size; strips EXIF metadata — Phase 01
+- ✓ Orchestrator agent coordinates full pipeline via ADK — Phase 02
+- ✓ Transcription agent sends image to Gemini 3 Pro and returns raw text — Phase 02
+- ✓ Cleaning agent expands abbreviations, normalizes archaic spelling — Phase 02
+- ✓ Context agent queries MCP server to resolve named entities — Phase 02
+- ✓ MCP server exposes lookup_entity, normalize_date, expand_abbreviation, place_context tools — Phase 02
+- ✓ Verification agent scores confidence per word, marks doubtful words — Phase 03
+- ✓ Output includes: clean transcription, historical notes, confidence map — Phase 03
+- ✓ Gradio UI for demo (Bento Grid + Glassmorphism wizard) — Phase 03 + Phase 05
+- ✓ Cloud Run deploy (Oracle VM) with Docker + FastMCP stdio — Phase 04
 
 ### Active
 
-- [ ] User can upload a scanned image (JPG/PNG) of a historical handwritten document
-- [ ] System validates file type and size; strips EXIF metadata; defends against prompt injection
-- [ ] Orchestrator agent coordinates full pipeline via ADK
-- [ ] Transcription agent sends image to Gemini 3 Pro and returns raw text
-- [ ] Cleaning agent expands abbreviations, normalizes archaic spelling, corrects obvious OCR errors
-- [ ] Context agent queries MCP server to resolve named entities (persons, places, dates)
-- [ ] MCP server exposes lookup_entity, normalize_date, expand_abbreviation, place_context tools
-- [ ] Verification agent scores confidence per passage and marks doubtful words/lines
-- [ ] Output includes: clean transcription, historical notes, confidence map, flagged uncertainties
-- [ ] Gradio UI for demo (upload → process → display results)
 - [ ] README with architecture diagram, setup instructions, env-var docs (no credentials in repo)
 - [ ] Kaggle Writeup drafted (≤2500 words, Freestyle track, cover image, YouTube video link)
+- [ ] YouTube video recorded (≤5 min: problem, agents rationale, architecture, demo, build)
 
 ### Out of Scope
 

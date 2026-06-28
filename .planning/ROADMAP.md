@@ -143,7 +143,16 @@ Plans:
   4. "New transcription" button resets UI to initial state without page reload
   5. App still runs via `python -m palimpsest.app` and Docker deploy unchanged
 
-**Plans**: 0/0 plans
+**Plans**: 2 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 05-01-PLAN.md — CUSTOM_CSS constant + Bento Grid wizard layout skeleton (UI-WIZ-01, UI-WIZ-03)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 05-02-PLAN.md — Progressive reveal + reset handler + 10-output event wiring (UI-WIZ-02, UI-WIZ-04)
 
 **UI hint**: yes
 

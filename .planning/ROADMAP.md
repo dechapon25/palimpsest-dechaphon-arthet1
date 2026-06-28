@@ -17,6 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Full Multi-Agent System** - Cleaning agent (Agent Skill) + MCP server (4 tools) + context agent wired into orchestrator (completed 2026-06-24)
 - [x] **Phase 3: Verification + Gradio UI** - Confidence scoring, uncertainty highlights, and full Gradio demo interface (completed 2026-06-25)
 - [ ] **Phase 4: Deploy + Submission Artifacts** - Cloud Run containerization, README, Kaggle Writeup, and video scaffold
+- [ ] **Phase 5: UI Wizard Redesign** - Progressive-reveal wizard with Bento Grid + Glassmorphism style
 
 ## Phase Details
 
@@ -129,10 +130,27 @@ Plans:
 
 - [ ] 04-03-PLAN.md — README architecture update + inline code comments/docstrings + Kaggle Writeup draft + YouTube video + Kaggle submission (DOC-01, DOC-02, DOC-03, DOC-04)
 
+### Phase 5: UI Wizard Redesign
+
+**Goal**: Replace the current single-page Gradio layout with a progressive-reveal wizard: one upload screen, then results that appear incrementally as each pipeline stage completes (raw transcription → cleaned → historical notes → confidence map). Visual style: Bento Grid + Glassmorphism using custom CSS in gr.Blocks.
+**Depends on**: Phase 4
+**Requirements**: UI-WIZ-01, UI-WIZ-02, UI-WIZ-03, UI-WIZ-04
+**Success Criteria** (what must be TRUE):
+
+  1. Upload screen shows only the file picker and submit button — no result panels visible until processing starts
+  2. Results appear incrementally in order: raw transcription first, then cleaned text replaces/complements it, then historical notes, then confidence map
+  3. Visual style is Bento Grid + Glassmorphism (frosted-glass cards, dark or semi-dark background, subtle amber/gold accent color matching manuscript theme)
+  4. "New transcription" button resets UI to initial state without page reload
+  5. App still runs via `python -m palimpsest.app` and Docker deploy unchanged
+
+**Plans**: 0/0 plans
+
+**UI hint**: yes
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -140,3 +158,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 2. Full Multi-Agent System | 2/2 | Complete    | 2026-06-24 |
 | 3. Verification + Gradio UI | 3/3 | Complete    | 2026-06-25 |
 | 4. Deploy + Submission Artifacts | 2/3 | In Progress|  |
+| 5. UI Wizard Redesign | 0/? | Planned |  |

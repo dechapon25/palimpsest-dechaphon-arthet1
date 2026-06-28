@@ -21,6 +21,10 @@ from google.adk.agents import LlmAgent
 from google.genai import types
 
 # D-04: Uncertainty threshold. Words scoring below this value are uncertain.
+# Why 0.7: Calibrated to capture [?] tokens and [illegible] markers while
+# keeping common Spanish function words (el, la, de) in the confident band.
+# Configurable via PALIMPSEST_CONFIDENCE_THRESHOLD env var (read by app.py;
+# mirrors this value for pipeline/UI consistency).
 CONFIDENCE_THRESHOLD = 0.7
 
 VERIFICATION_INSTRUCTION = """\

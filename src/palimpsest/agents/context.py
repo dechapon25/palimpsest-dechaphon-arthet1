@@ -76,6 +76,12 @@ Do NOT include any text before or after the JSON array.
 # MCP-06: McpToolset connects to the FastMCP server as a subprocess.
 # T-02-09: sys.executable ensures same Python interpreter / virtualenv.
 # No shell=True, no user-controlled command args.
+#
+# Why stdio transport: StdioConnectionParams requires a parent/child process
+# relationship — McpToolset spawns the MCP server as a subprocess via
+# sys.executable. stdio cannot cross container or network boundaries.
+# If multi-container deploy is ever needed, switch to HTTP transport and
+# run mcp/server.py separately on a fixed port.
 context_agent = LlmAgent(
     name="ContextAgent",
     model="gemini-2.5-flash",

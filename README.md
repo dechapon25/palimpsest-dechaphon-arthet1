@@ -13,12 +13,12 @@ Scanned manuscript image
         │
         ▼
 ┌─────────────────┐
-│ Document Intake  │  Security checks, EXIF strip, format validation
+│ Document Intake  │  Security checks, EXIF strip, format validation (SEC-01–SEC-04)
 └────────┬────────┘
          ▼
 ┌─────────────────┐
 │ Transcription    │  Gemini 2.5 Pro vision reads cursive handwriting
-│ Agent            │
+│ Agent            │  maxOutputTokens=65536 · temperature=0.1 · thinkingBudget=128
 └────────┬────────┘
          ▼
 ┌─────────────────┐
@@ -28,14 +28,20 @@ Scanned manuscript image
          ▼
 ┌─────────────────┐     ┌──────────────────────┐
 │ Context Agent    │────▶│ FastMCP Server       │
-│                  │◀────│ • lookup_entity      │
-│                  │     │ • normalize_date     │
+│                  │◀────│ • lookup_entity      │──▶ Wikidata SPARQL
+│                  │     │ • normalize_date     │◀── Wikipedia REST
 │                  │     │ • expand_abbreviation│
 │                  │     │ • place_context      │
 └────────┬────────┘     └──────────────────────┘
-         ▼                    (Wikidata/Wikipedia)
+         ▼
 ┌─────────────────┐
-│ JSON Output      │  raw + cleaned + context notes + metadata
+│ Verification     │  Scores confidence per word/span (0.0–1.0)
+│ Agent            │  Marks uncertain passages for UI highlighting
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│ Gradio UI        │  raw_transcription · cleaned_transcription
+│ Output           │  context_notes (entity table) · confidence_map (highlights)
 └─────────────────┘
 ```
 
@@ -47,7 +53,8 @@ git clone https://github.com/carlosapsa/palimpsest.git
 cd palimpsest
 python -m venv .venv
 source .venv/bin/activate
-pip install -e .
+pip install -r requirements.txt
+export PYTHONPATH=$PWD/src
 
 # Set your Gemini API key
 export GOOGLE_API_KEY=your-key-here
@@ -55,6 +62,18 @@ export GOOGLE_API_KEY=your-key-here
 # Run on a sample manuscript
 python -m palimpsest.run data/samples/pares_easy_18c.jpg
 ```
+
+## Running with Docker
+
+```bash
+docker build -t palimpsest .
+docker run -d -p 7860:7860 -e GOOGLE_API_KEY=your-key palimpsest
+# Open http://localhost:7860
+```
+
+## Live Demo
+
+**Public URL:** http://144.21.40.193:7860/
 
 ## Output
 
@@ -94,7 +113,7 @@ src/palimpsest/
 
 ## Requirements
 
-- Python 3.12+
+- Python 3.11+
 - `GOOGLE_API_KEY` environment variable (Gemini API)
 - Internet access (Wikidata/Wikipedia lookups)
 
@@ -104,8 +123,8 @@ src/palimpsest/
 |-------|-------------|--------|
 | 1. MVP Linear Pipeline | Transcription agent + intake security | ✓ Complete |
 | 2. Full Multi-Agent System | Cleaning + MCP server + context agent | ✓ Complete |
-| 3. Verification + Gradio UI | Confidence scoring + demo interface | Planned |
-| 4. Deploy + Submission | Cloud Run + Kaggle writeup + video | Planned |
+| 3. Verification + Gradio UI | Confidence scoring + demo interface | ✓ Complete |
+| 4. Deploy + Submission | Docker + Oracle VM + Kaggle writeup + video | ✓ Complete |
 
 ## License
 

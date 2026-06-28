@@ -50,11 +50,20 @@ transcription_agent = LlmAgent(
     planner=BuiltInPlanner(
         thinking_config=types.ThinkingConfig(
             include_thoughts=False,
+            # Why: Lower thinking_budget is counterintuitive but correct for
+            # transcription. Higher budgets cause the model to over-analyze
+            # cursive stroke ambiguities rather than simply reading the text.
             thinking_budget=128,  # D-02: low budget is better for transcription
         )
     ),
     generate_content_config=types.GenerateContentConfig(
+        # Why: Low temperature reduces variance on proper nouns and place names,
+        # which must be transcribed exactly. Higher temperature introduces
+        # hallucinated name variants in colonial-era Spanish proper nouns.
         temperature=0.1,  # D-02: reduces variance on proper nouns and dates
+        # Why: The default 8192 token limit silently truncates multi-page manuscripts
+        # mid-transcription with no error or warning (TRS-01). 65536 is explicitly
+        # required for complete output of colonial-era multi-page documents.
         max_output_tokens=65536,  # D-02: prevents silent truncation of long documents
         # Prevents markdown fence wrapping (Pitfall 5)
         response_mime_type="application/json",

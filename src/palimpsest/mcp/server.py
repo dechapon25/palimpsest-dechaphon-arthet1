@@ -1,14 +1,23 @@
-"""FastMCP server exposing four historical-context tools.
+"""FastMCP server exposing four historical-context tools for Palimpsest.
 
-Tools:
-  lookup_entity(name)       -- Wikidata wbsearchentities + SPARQL (MCP-01, MCP-05)
-  normalize_date(text)      -- Regex parser for archaic Spanish dates (MCP-02)
-  expand_abbreviation(token)-- Local dictionary lookup (MCP-03)
-  place_context(place, year)-- Wikidata SPARQL + Wikipedia REST API (MCP-04, MCP-05)
+Uses FastMCP with stdio transport to provide entity lookup, date normalization,
+abbreviation expansion, and place context to the ContextAgent. Data sources are
+Wikidata SPARQL and Wikipedia REST API — no API key required (MCP-05).
+
+MCP-01: lookup_entity    -- Wikidata wbsearchentities + SPARQL
+MCP-02: normalize_date   -- Regex parser for archaic Spanish dates
+MCP-03: expand_abbreviation -- Local dictionary lookup (46-entry Spanish dict)
+MCP-04: place_context    -- Wikidata SPARQL + Wikipedia REST API
+MCP-05: no external API key required (Wikidata/Wikipedia are open APIs)
 
 All external API calls target hardcoded Wikidata/Wikipedia endpoints only (T-02-05).
 JSON responses are parsed with .get() access patterns -- no eval/exec (T-02-06).
 HTTP requests include timeout and User-Agent header per Wikidata/Wikipedia policy.
+
+CRITICAL: Do NOT add any print() calls anywhere in this file. This server
+communicates with McpToolset via stdio JSON-RPC. Any output written to
+stdout (including print() debug statements) will corrupt the JSON-RPC
+channel and cause the ContextAgent to hang or return empty results silently.
 
 Run standalone: python -m palimpsest.mcp.server  (stdio transport)
 """
@@ -370,5 +379,8 @@ def place_context(place: str, year: int | None = None) -> dict:
         }
 
 
+# Subprocess entry point: context.py spawns this module via
+# StdioServerParameters(command=sys.executable, args=["-m", "palimpsest.mcp.server"]).
+# mcp.run() defaults to stdio transport — reads JSON-RPC on stdin, writes on stdout.
 if __name__ == "__main__":
     mcp.run()

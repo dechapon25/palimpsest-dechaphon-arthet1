@@ -41,7 +41,11 @@ def validate_and_clean(file_path: str) -> tuple[bytes, str]:
         )
 
     # SEC-01: magic-byte validation via filetype (reads first 261 bytes, no decoding)
-    # NEVER use file extension; NEVER call Pillow before this check
+    # NEVER use file extension; NEVER call Pillow before this check.
+    # Why filetype.guess() before Pillow.open(): Pillow trusts the file extension,
+    # but filetype.guess() reads the actual byte signature. This catches renamed
+    # non-image files (e.g., a DOCX renamed to .jpg) before any image decoding
+    # occurs. Magic-byte validation must always precede image parsing (D-21/SEC-01).
     kind = filetype.guess(raw_bytes)
     if kind is None or kind.mime not in ALLOWED_MIME_TYPES:
         detected = kind.mime if kind else "unknown"

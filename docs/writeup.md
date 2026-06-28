@@ -2,7 +2,7 @@
 
 **Kaggle AI Agents Capstone — Freestyle Track**
 **GitHub:** https://github.com/carlosapsa/palimpsest
-**Live Demo:** http://144.21.40.193:7860/
+**Live Demo:** http://palimpsest.cpaz.es:7860/
 
 ---
 
@@ -122,7 +122,7 @@ The **security features** (SEC-01 through SEC-04) address a real attack surface 
 
 ## 5. Results and Live Demo
 
-**Live demo:** http://144.21.40.193:7860/ (deployed on Oracle Cloud VM, docker run --restart=always)
+**Live demo:** http://palimpsest.cpaz.es:7860/ (deployed on Oracle Cloud VM, docker run --restart=always)
 
 **GitHub:** https://github.com/carlosapsa/palimpsest
 

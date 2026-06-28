@@ -73,7 +73,7 @@ docker run -d -p 7860:7860 -e GOOGLE_API_KEY=your-key palimpsest
 
 ## Live Demo
 
-**Public URL:** http://144.21.40.193:7860/
+**Public URL:** http://palimpsest.cpaz.es:7860/
 
 ## Output
 

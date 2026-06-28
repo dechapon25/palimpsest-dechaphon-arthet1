@@ -13,10 +13,10 @@ requires:
   - phase: 04-01
     provides: Dockerfile + image artifact (palimpsest:latest)
 provides:
-  - Running container palimpsest-prod on Oracle VM (144.21.40.193)
+  - Running container palimpsest-prod on Oracle VM (palimpsest.cpaz.es)
   - OS-level firewall rule: 7860/tcp via firewalld (permanent)
   - OCI Console VCN security list: TCP 7860 ingress rule
-  - Public URL: http://144.21.40.193:7860/
+  - Public URL: http://palimpsest.cpaz.es:7860/
   - Full pipeline smoke test (pares_easy_18c.jpg end-to-end with Historical Notes)
 affects:
   - 04-03 (Kaggle Writeup + video — needs the confirmed public URL)
@@ -36,7 +36,7 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Public URL confirmed as http://144.21.40.193:7860/ (IP-based, no custom domain required for Kaggle submission)"
+  - "Public URL confirmed as http://palimpsest.cpaz.es:7860/ (IP-based, no custom domain required for Kaggle submission)"
   - "Both firewall layers mandatory: opening OCI Console only is insufficient (OS firewalld blocks even if OCI allows)"
   - "GOOGLE_API_KEY injected via -e flag at docker run time to avoid shell history exposure risk"
   - "FastMCP stdio subprocess confirmed working — Context Agent populates Historical Notes correctly"
@@ -77,11 +77,11 @@ coverage:
     human_judgment: true
     rationale: "Browser-only OCI Console action — no CLI path available without OCI CLI setup; human verified visually"
   - id: D4
-    description: "Public URL http://144.21.40.193:7860/ reachable from external network with HTTP 200"
+    description: "Public URL http://palimpsest.cpaz.es:7860/ reachable from external network with HTTP 200"
     requirement: DEP-02
     verification:
       - kind: manual_procedural
-        ref: "curl -s -o /dev/null -w '%{http_code}' http://144.21.40.193:7860/ → 200 from external network"
+        ref: "curl -s -o /dev/null -w '%{http_code}' http://palimpsest.cpaz.es:7860/ → 200 from external network"
         status: pass
     human_judgment: false
   - id: D5
@@ -89,7 +89,7 @@ coverage:
     requirement: DEP-02
     verification:
       - kind: manual_procedural
-        ref: "Browser: http://144.21.40.193:7860/ → upload pares_easy_18c.jpg → Raw/Clean/Historical Notes/Confidence all populated"
+        ref: "Browser: http://palimpsest.cpaz.es:7860/ → upload pares_easy_18c.jpg → Raw/Clean/Historical Notes/Confidence all populated"
         status: pass
     human_judgment: true
     rationale: "End-to-end visual verification of all Gradio UI panels requires human judgment; FastMCP context agent correctness must be assessed by reviewer"
@@ -101,7 +101,7 @@ status: complete
 
 # Phase 04 Plan 02: Oracle VM Deploy + Public Access Summary
 
-**Docker container palimpsest-prod deployed to Oracle VM at http://144.21.40.193:7860/ with dual-layer firewall (OS firewalld + OCI Console) open and full pipeline verified end-to-end including FastMCP Context Agent.**
+**Docker container palimpsest-prod deployed to Oracle VM at http://palimpsest.cpaz.es:7860/ with dual-layer firewall (OS firewalld + OCI Console) open and full pipeline verified end-to-end including FastMCP Context Agent.**
 
 ## Performance
 
@@ -112,10 +112,10 @@ status: complete
 
 ## Accomplishments
 
-- Container `palimpsest-prod` running on Oracle Cloud VM (144.21.40.193) with `--restart=always`, surviving reboots
+- Container `palimpsest-prod` running on Oracle Cloud VM (palimpsest.cpaz.es) with `--restart=always`, surviving reboots
 - OS firewall permanently opened: `sudo firewall-cmd --zone=public --permanent --add-port=7860/tcp`
 - OCI Console VCN security list ingress rule added: TCP port 7860 from 0.0.0.0/0
-- Public URL `http://144.21.40.193:7860/` confirmed accessible from external network (HTTP 200)
+- Public URL `http://palimpsest.cpaz.es:7860/` confirmed accessible from external network (HTTP 200)
 - Full pipeline smoke test completed: `pares_easy_18c.jpg` processed with all 4 Gradio panels populated, Historical Notes confirmed (Context Agent / FastMCP stdio subprocess working correctly)
 - `GOOGLE_API_KEY` injected at runtime via `-e` flag — no credentials baked into image or shell history
 
@@ -140,8 +140,8 @@ None. This plan is a pure infrastructure deployment plan. All artifacts are live
 
 | Component | Value |
 |-----------|-------|
-| Oracle VM IP | 144.21.40.193 |
-| Public URL | http://144.21.40.193:7860/ |
+| Oracle VM IP | palimpsest.cpaz.es |
+| Public URL | http://palimpsest.cpaz.es:7860/ |
 | Container name | palimpsest-prod |
 | Restart policy | always |
 | Port binding | 0.0.0.0:7860→7860/tcp |
@@ -151,7 +151,7 @@ None. This plan is a pure infrastructure deployment plan. All artifacts are live
 
 ## Decisions Made
 
-- **IP-based URL (no custom domain):** http://144.21.40.193:7860/ is sufficient for Kaggle judge access. Custom domain (D-03 option) not required within the competition timeline.
+- **IP-based URL (no custom domain):** http://palimpsest.cpaz.es:7860/ is sufficient for Kaggle judge access. Custom domain (D-03 option) not required within the competition timeline.
 - **Both firewall layers required:** Oracle VM has two independent firewall layers. Opening OCI Console security list alone does NOT allow traffic — OS firewalld must also be opened. This was the documented Pitfall 3 in RESEARCH.md; applied correctly.
 - **API key via -e flag at runtime:** Avoids key in shell history. Consistent with T-04-D-01 mitigation from the plan's threat model.
 - **FastMCP stdio subprocess confirmed working:** `PYTHONUNBUFFERED=1` set in Dockerfile (Plan 01) ensured the MCP server subprocess doesn't buffer output silently. Validated by Historical Notes populating correctly during smoke test.
@@ -183,13 +183,13 @@ No new threat surface beyond what is documented in the plan's threat model.
 ## Next Phase Readiness
 
 - Plan 04-03 (README + Writeup + video) can proceed immediately
-- Public URL for inclusion in Writeup and video: **http://144.21.40.193:7860/**
+- Public URL for inclusion in Writeup and video: **http://palimpsest.cpaz.es:7860/**
 - All pipeline functionality confirmed working on the live deployment
 - No blockers
 
 ## Self-Check: PASSED
 
-- [x] Public URL confirmed reachable: http://144.21.40.193:7860/
+- [x] Public URL confirmed reachable: http://palimpsest.cpaz.es:7860/
 - [x] Container palimpsest-prod running with restart=always
 - [x] OS firewall (firewalld) permanently allows 7860/tcp
 - [x] OCI Console security list TCP 7860 ingress rule active

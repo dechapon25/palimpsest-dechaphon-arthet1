@@ -46,6 +46,86 @@ load_dotenv()
 # Mirrors CONFIDENCE_THRESHOLD in verification.py (D-04).
 CONFIDENCE_THRESHOLD = 0.7
 
+CUSTOM_CSS = """
+/* Palimpsest Wizard — Bento Grid + Glassmorphism */
+
+.gradio-container {
+    background-color: #0F172A !important;
+    min-height: 100vh;
+}
+
+.glass-card {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(201, 168, 76, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    padding: 20px 20px 24px 20px;
+}
+
+.glass-card h3 {
+    border-left: 3px solid #C9A84C;
+    padding-left: 8px;
+    margin-bottom: 16px;
+    color: #F1F5F9;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.bento-results {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    grid-template-rows: auto auto;
+    grid-template-areas: "transcription confidence" "notes notes";
+    gap: 12px;
+}
+.bento-transcription { grid-area: transcription; }
+.bento-confidence    { grid-area: confidence; }
+.bento-notes         { grid-area: notes; }
+.bento-results > .form { display: contents; }
+
+.upload-zone {
+    border: 2px dashed #C9A84C;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #C9A84C !important;
+    color: #0F172A !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+}
+
+.btn-reset {
+    border: 1px solid #C9A84C !important;
+    color: #C9A84C !important;
+    background: transparent !important;
+    border-radius: 8px !important;
+}
+
+.status-line {
+    font-size: 13px;
+    color: #C9A84C;
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 20px;
+}
+
+.app-title h2 {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #F1F5F9;
+}
+
+.gradio-container, .gradio-container * {
+    color: #CBD5E1;
+}
+"""
+
 
 def render_confidence_html(word_scores: list[dict]) -> str:
     """Convert confidence_map word list to HTML with uncertainty highlights.
@@ -246,71 +326,51 @@ def toggle_view(view: str, raw: str, cleaned: str) -> str:
     return raw if view == "Raw" else cleaned
 
 
-# ---------------------------------------------------------------------------
-# Gradio Blocks layout (D-07 vertical order: Upload -> Transcription ->
-# Historical Notes -> Confidence Map)
-# ---------------------------------------------------------------------------
+with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") as demo:
+    with gr.Column(elem_classes=["app-title"]):
+        gr.Markdown("## Palimpsest")
 
-with gr.Blocks(
-    title="Palimpsest — Manuscript Transcription",
-) as demo:
-    # Note: theme=gr.themes.Soft() is passed to demo.launch() in Gradio 6.x;
-    # the Blocks constructor no longer accepts a theme parameter (moved in 6.0).
-    gr.Markdown("## Palimpsest")
-
-    # Invisible state components for Raw/Cleaned toggle (D-08, UI-05)
     raw_state = gr.State(value="")
     cleaned_state = gr.State(value="")
 
-    # 1. Upload section (D-10, UI-01)
-    with gr.Row():
+    with gr.Column(elem_classes=["upload-zone"]):
         file_input = gr.File(
-            label="Upload Manuscript Image",
+            label="Subir imagen de manuscrito",
             file_types=[".jpg", ".jpeg", ".png"],
             file_count="single",
             type="filepath",
         )
-        submit_btn = gr.Button("Transcribe Manuscript", variant="primary")
+        submit_btn = gr.Button("Transcribir", variant="primary", elem_classes=["btn-primary"])
 
-    # 2. Transcription section with Raw/Cleaned toggle (D-08, UI-02, UI-05)
-    with gr.Group():
-        view_toggle = gr.Radio(
-            label="View",
-            choices=["Raw", "Cleaned"],
-            value="Cleaned",
-        )
-        transcription_box = gr.Textbox(
-            label="Transcription",
-            interactive=False,
-            lines=15,
-            placeholder="(transcription will appear here)",
-        )
-        # Note: show_copy_button was removed in Gradio 6.x; omitted for compatibility.
+    status_md = gr.Markdown("", elem_classes=["status-line"])
 
-    # 3. Historical Notes section (D-09, UI-04)
-    notes_md = gr.Markdown(
-        label="Historical Notes",
-        value="(historical notes will appear after processing)",
-    )
+    with gr.Column(elem_classes=["bento-results"]):
+        with gr.Column(visible=False, elem_classes=["glass-card", "bento-transcription"]) as transcription_section:
+            gr.Markdown("### Transcripción")
+            view_toggle = gr.Radio(label="Vista:", choices=["Raw", "Limpiada"], value="Limpiada")
+            transcription_box = gr.Textbox(
+                label="",
+                interactive=False,
+                lines=15,
+                placeholder="(la transcripción aparecerá aquí)",
+            )
 
-    # 4. Confidence Map section (D-14, D-17, UI-03)
-    confidence_html = gr.HTML(
-        label="Confidence Map",
-        value="(confidence map will appear after processing)",
-    )
+        with gr.Column(visible=False, elem_classes=["glass-card", "bento-confidence"]) as confidence_section:
+            gr.Markdown("### Mapa de Confianza")
+            confidence_html = gr.HTML(value="")
 
-    # ---------------------------------------------------------------------------
-    # Event wiring
-    # ---------------------------------------------------------------------------
+        with gr.Column(visible=False, elem_classes=["glass-card", "bento-notes"]) as notes_section:
+            gr.Markdown("### Notas Históricas")
+            notes_md = gr.Markdown(value="")
 
-    # Submit button: run pipeline, populate all output components
+    reset_btn = gr.Button("Nueva transcripción", visible=False, elem_classes=["btn-reset"])
+
+    # TODO(plan-02): extend outputs to include section visibility and status_md
     submit_btn.click(
         fn=transcribe_manuscript,
         inputs=[file_input],
         outputs=[transcription_box, raw_state, cleaned_state, notes_md, confidence_html],
     )
-
-    # Radio toggle: switch Textbox content without re-running pipeline (D-08, UI-05)
     view_toggle.change(
         fn=toggle_view,
         inputs=[view_toggle, raw_state, cleaned_state],

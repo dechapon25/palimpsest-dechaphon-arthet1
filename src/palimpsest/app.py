@@ -380,12 +380,31 @@ with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") 
 
     reset_btn = gr.Button("Nueva transcripción", visible=False, elem_classes=["btn-reset"])
 
-    # TODO(plan-02): extend outputs to include section visibility and status_md
+    outputs_full = [
+        transcription_box,
+        raw_state,
+        cleaned_state,
+        notes_md,
+        confidence_html,
+        transcription_section,
+        confidence_section,
+        notes_section,
+        reset_btn,
+        status_md,
+    ]
+
     submit_btn.click(
         fn=transcribe_manuscript,
         inputs=[file_input],
-        outputs=[transcription_box, raw_state, cleaned_state, notes_md, confidence_html],
+        outputs=outputs_full,
     )
+
+    reset_btn.click(
+        fn=reset_manuscript,
+        inputs=[],
+        outputs=outputs_full,
+    )
+
     view_toggle.change(
         fn=toggle_view,
         inputs=[view_toggle, raw_state, cleaned_state],

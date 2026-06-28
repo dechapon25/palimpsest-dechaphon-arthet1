@@ -46,7 +46,11 @@ organizational entities. Limit to the top 10 most significant entities \
 to avoid excessive API calls (T-02-07).
 3. For each entity, use the available MCP tools to look up context (CTX-02):
    - Use lookup_entity(name) for persons and institutions to get Wikidata \
-information including dates, description, and source URL.
+information including dates, description, and source URL. Always use the \
+complete historical name (e.g. "Cristóbal Colón" not "Colón"; \
+"Fernando de Aragón" not "el Rey"; "Hernán Cortés" not "Cortés"). \
+If the text uses a title like "el Almirante" and the document context \
+indicates Columbus, search "Cristóbal Colón".
    - Use place_context(place, year) for geographic locations to get \
 historical and modern context.
    - Use normalize_date(text) for archaic date expressions (e.g., "el 25 \

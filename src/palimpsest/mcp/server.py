@@ -94,14 +94,46 @@ def lookup_entity(name: str) -> dict:
         results = resp.json().get("search", [])
 
         if not results:
-            return {
-                "found": False,
-                "entity": name,
-                "error": "No Wikidata match found",
-            }
+            # Fallback: retry with English for names that may be known under
+            # a different language label (e.g. "Colón" → "Columbus").
+            params["language"] = "en"
+            resp2 = requests.get(
+                WIKIDATA_API, params=params, headers=HEADERS, timeout=10,
+            )
+            resp2.raise_for_status()
+            results = resp2.json().get("search", [])
+            if not results:
+                return {
+                    "found": False,
+                    "entity": name,
+                    "error": "No Wikidata match found",
+                }
 
-        # Step 2: Take top result QID, query SPARQL for details
-        qid = results[0]["id"]
+        # Step 2: Pick the best QID — prefer results with a birthDate
+        # (P569) which strongly signals a historical person.  The top Spanish
+        # result for a bare surname like "Colón" is often an anatomical term
+        # rather than the explorer; iterating the candidate list and checking
+        # for P569 avoids that false-positive.
+        best_qid: str | None = None
+        for candidate in results[:5]:
+            cid = candidate.get("id", "")
+            if not QID_PATTERN.match(cid):
+                continue
+            check = requests.get(
+                SPARQL_ENDPOINT,
+                params={
+                    "query": (
+                        f"ASK {{ wd:{cid} wdt:P569 [] }}"
+                    ),
+                    "format": "json",
+                },
+                headers=HEADERS,
+                timeout=10,
+            )
+            if check.ok and check.json().get("boolean"):
+                best_qid = cid
+                break
+        qid = best_qid or results[0]["id"]
         if not QID_PATTERN.match(qid):
             return {"found": False, "entity": name, "error": f"Invalid QID format: {qid}"}
         query = f"""

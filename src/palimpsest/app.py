@@ -231,7 +231,7 @@ def transcribe_manuscript(file_path: str) -> tuple:
         5-tuple: (cleaned_text, raw_text, cleaned_text, markdown_table, html_string)
     """
     if file_path is None:
-        raise gr.Error("Please upload a manuscript image first.")
+        raise gr.Error("Por favor, sube una imagen del manuscrito primero.")
 
     # SEC-01/02/03: validate file type, size, strip EXIF via security intake layer.
     # file_path is a plain str — validate_and_clean accepts str (pathlib.Path internally).
@@ -252,7 +252,7 @@ def transcribe_manuscript(file_path: str) -> tuple:
         msg = (
             "; ".join(errors)
             if errors
-            else "Processing failed. Check your image file and try again."
+            else "Procesamiento fallido. Verifica que el archivo sea válido y vuelve a intentarlo."
         )
         raise gr.Error(msg)
 
@@ -295,18 +295,17 @@ def transcribe_manuscript(file_path: str) -> tuple:
     except (json.JSONDecodeError, TypeError):
         confidence_list = []
 
-    # Return 5-tuple:
-    #   [0] transcription_box: show cleaned_text by default (D-08 default = "Cleaned")
-    #   [1] raw_state: store raw_text in gr.State for toggle
-    #   [2] cleaned_state: store cleaned_text in gr.State for toggle
-    #   [3] notes_md: Markdown table from context_notes
-    #   [4] confidence_html: HTML string from confidence_map
     return (
         cleaned_text,
         raw_text,
         cleaned_text,
         render_context_table(context_list),
         render_confidence_html(confidence_list),
+        gr.update(visible=True),
+        gr.update(visible=True),
+        gr.update(visible=True),
+        gr.update(visible=True),
+        "Procesamiento completado.",
     )
 
 
@@ -324,6 +323,22 @@ def toggle_view(view: str, raw: str, cleaned: str) -> str:
         The appropriate text string for the Transcription Textbox.
     """
     return raw if view == "Raw" else cleaned
+
+
+def reset_manuscript() -> tuple:
+    """Reset all UI state and hide result panels. Returns 10-tuple matching submit_btn outputs."""
+    return (
+        "",                          # transcription_box
+        "",                          # raw_state
+        "",                          # cleaned_state
+        "",                          # notes_md
+        "",                          # confidence_html
+        gr.update(visible=False),    # transcription_section
+        gr.update(visible=False),    # confidence_section
+        gr.update(visible=False),    # notes_section
+        gr.update(visible=False),    # reset_btn
+        "",                          # status_md
+    )
 
 
 with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") as demo:

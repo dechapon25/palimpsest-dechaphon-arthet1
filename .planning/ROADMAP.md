@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Full Multi-Agent System** - Cleaning agent (Agent Skill) + MCP server (4 tools) + context agent wired into orchestrator (completed 2026-06-24)
 - [x] **Phase 3: Verification + Gradio UI** - Confidence scoring, uncertainty highlights, and full Gradio demo interface (completed 2026-06-25)
 - [ ] **Phase 4: Deploy + Submission Artifacts** - Cloud Run containerization, README, Kaggle Writeup, and video scaffold
-- [ ] **Phase 5: UI Wizard Redesign** - Progressive-reveal wizard with Bento Grid + Glassmorphism style
+- [x] **Phase 5: UI Wizard Redesign** - Progressive-reveal wizard with Bento Grid + Glassmorphism style (completed 2026-06-28)
 
 ## Phase Details
 
@@ -143,16 +143,16 @@ Plans:
   4. "New transcription" button resets UI to initial state without page reload
   5. App still runs via `python -m palimpsest.app` and Docker deploy unchanged
 
-**Plans**: 2 plans
+**Plans**: 2/2 plans complete
 
 Plans:
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — CUSTOM_CSS constant + Bento Grid wizard layout skeleton (UI-WIZ-01, UI-WIZ-03)
+- [x] 05-01-PLAN.md — CUSTOM_CSS constant + Bento Grid wizard layout skeleton (UI-WIZ-01, UI-WIZ-03)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 05-02-PLAN.md — Progressive reveal + reset handler + 10-output event wiring (UI-WIZ-02, UI-WIZ-04)
+- [x] 05-02-PLAN.md — Progressive reveal + reset handler + 10-output event wiring (UI-WIZ-02, UI-WIZ-04)
 
 **UI hint**: yes
 
@@ -167,4 +167,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Full Multi-Agent System | 2/2 | Complete    | 2026-06-24 |
 | 3. Verification + Gradio UI | 3/3 | Complete    | 2026-06-25 |
 | 4. Deploy + Submission Artifacts | 2/3 | In Progress|  |
-| 5. UI Wizard Redesign | 0/? | Planned |  |
+| 5. UI Wizard Redesign | 2/2 | Complete   | 2026-06-28 |

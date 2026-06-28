@@ -109,28 +109,26 @@ def lookup_entity(name: str) -> dict:
                     "error": "No Wikidata match found",
                 }
 
-        # Step 2: Pick the best QID — prefer results with a birthDate
-        # (P569) which strongly signals a historical person.  The top Spanish
-        # result for a bare surname like "Colón" is often an anatomical term
-        # rather than the explorer; iterating the candidate list and checking
-        # for P569 avoids that false-positive.
+        # Step 2: Pick the best QID — skip results whose Wikidata description
+        # contains anatomical/non-person signals (e.g. "part of large intestine"
+        # when searching "Colón"). No extra HTTP requests needed.
+        # Skip non-person results using whole-word description tokens.
+        # "colon" alone = anatomical; "colonist"/"colonial" are person markers.
+        import re as _re
+        _SKIP_WORDS = (
+            r"\bintestine\b", r"\bintestino\b", r"\bcolon\b",
+            r"\bpunctuation\b", r"\bletter\b", r"\bgenus\b",
+            r"\bspecies\b", r"\bmunicipality\b", r"\bfamily name\b",
+            r"\bapellido\b", r"\bsurname\b", r"\bwarship\b", r"\bcruiser\b",
+        )
+        _SKIP_RE = _re.compile("|".join(_SKIP_WORDS), _re.IGNORECASE)
         best_qid: str | None = None
         for candidate in results[:5]:
             cid = candidate.get("id", "")
             if not QID_PATTERN.match(cid):
                 continue
-            check = requests.get(
-                SPARQL_ENDPOINT,
-                params={
-                    "query": (
-                        f"ASK {{ wd:{cid} wdt:P569 [] }}"
-                    ),
-                    "format": "json",
-                },
-                headers=HEADERS,
-                timeout=10,
-            )
-            if check.ok and check.json().get("boolean"):
+            desc = candidate.get("description", "")
+            if not _SKIP_RE.search(desc):
                 best_qid = cid
                 break
         qid = best_qid or results[0]["id"]

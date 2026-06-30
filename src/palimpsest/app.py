@@ -55,23 +55,21 @@ CUSTOM_CSS = """
     overflow-x: hidden;
 }
 
-/* Prevent layout-shift scroll when result cards reveal */
+/* No scroll anywhere — fixed viewport */
 body, html {
+    overflow: hidden;
+    height: 100%;
+}
+
+.gradio-container {
+    height: 100vh;
+    overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-gutter: stable;
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* IE/Edge */
 }
-
-/* Gradio 6.x wraps app in overflow:auto containers — normalize */
-.gradio-container > .contain,
-.gradio-container > .main,
-.gradio-container .app,
-.gradio-container .wrap {
-    overflow: visible !important;
-}
-
-/* Prevent the status-tracker overlay from expanding parent height */
-.gradio-container .wrap[style*="position"] {
-    overflow: hidden !important;
+.gradio-container::-webkit-scrollbar {
+    display: none;               /* Chrome/Safari */
 }
 
 .glass-card {

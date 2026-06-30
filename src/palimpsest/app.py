@@ -47,123 +47,292 @@ load_dotenv()
 CONFIDENCE_THRESHOLD = 0.7
 
 CUSTOM_CSS = """
-/* Palimpsest Wizard — Bento Grid + Glassmorphism */
+/* Palimpsest — Parchment Theme (Claude Design handoff) */
 
-.gradio-container {
-    background-color: #0F172A !important;
-    min-height: 100vh;
-    overflow-x: hidden;
+@import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+/* ── Design tokens ──────────────────────────────────────────── */
+:root {
+    --pal-bg:          #F1EADA;
+    --pal-card-bg:     #FBF8F0;
+    --pal-text:        #23190F;
+    --pal-text-2:      #6E6353;
+    --pal-text-muted:  #8A7E6B;
+    --pal-accent:      #AE3B2C;
+    --pal-green:       #2F6E5A;
+    --pal-amber:       #D9952E;
+    --pal-blue:        #4A5A86;
+    --pal-border:      rgba(35,25,15,0.12);
+    --pal-shadow:      0 18px 40px -30px rgba(35,25,15,0.4);
+    --pal-radius:      16px;
+    --pal-radius-pill: 999px;
+    --font-serif:      'Spectral', Georgia, serif;
+    --font-sans:       'Hanken Grotesk', system-ui, sans-serif;
+    --font-mono:       'IBM Plex Mono', 'Courier New', monospace;
 }
 
-/* No scroll anywhere — fixed viewport */
+/* ── Base ───────────────────────────────────────────────────── */
 body, html {
-    overflow: hidden;
-    height: 100%;
+    background-color: #F1EADA !important;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+}
+
+/* Background watermark — fixed italic Spectral text, barely visible */
+body::before {
+    content: "Palimpsesto · manuscrito · historia · transcripción paleográfica";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-1deg);
+    font-family: 'Spectral', Georgia, serif;
+    font-style: italic;
+    font-size: 40px;
+    color: rgba(35,25,15,0.038);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 0;
+    user-select: none;
 }
 
 .gradio-container {
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-width: none;       /* Firefox */
-    -ms-overflow-style: none;    /* IE/Edge */
-}
-.gradio-container::-webkit-scrollbar {
-    display: none;               /* Chrome/Safari */
-}
-
-.glass-card {
-    background: rgba(30, 41, 59, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(201, 168, 76, 0.15);
-    border-radius: 12px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-    padding: 20px 20px 24px 20px;
+    background-color: #F1EADA !important;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    font-family: var(--font-sans);
+    /* Gradio CSS variable overrides */
+    --loader-color:              #AE3B2C !important;
+    --block-background-fill:     #FBF8F0 !important;
+    --body-text-color:           #23190F !important;
+    --body-text-color-subdued:   #6E6353 !important;
+    --border-color-primary:      rgba(35,25,15,0.12) !important;
+    --background-fill-secondary: #FBF8F0 !important;
+    --background-fill-primary:   #F1EADA !important;
+    --color-accent:              #AE3B2C !important;
 }
 
-.glass-card h3 {
-    border-left: 3px solid #C9A84C;
-    padding-left: 8px;
+/* ── Header ─────────────────────────────────────────────────── */
+.pal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+}
+
+.pal-logo-mark {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    background: #23190F;
+    border-radius: 10px;
+    box-shadow: 0 4px 0 #AE3B2C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Spectral', Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #FBF8F0;
+    line-height: 1;
+}
+
+.pal-header-title {
+    font-family: 'Spectral', Georgia, serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: #23190F;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.pal-header-sub {
+    font-size: 14px;
+    color: #6E6353;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    margin: 3px 0 0 0;
+}
+
+/* ── Upload zone ────────────────────────────────────────────── */
+.pal-upload-zone {
+    border: 2px dashed rgba(174,59,44,0.40);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    background: #FBF8F0;
     margin-bottom: 16px;
-    color: #F1F5F9;
+}
+
+/* ── Cards ──────────────────────────────────────────────────── */
+.pal-card {
+    background: #FBF8F0;
+    border-radius: 16px;
+    box-shadow: var(--pal-shadow);
+    border: 1px solid var(--pal-border);
+    padding: 20px 24px 24px;
+}
+
+.pal-card h3, .pal-card .pal-card-title {
+    font-family: 'Spectral', Georgia, serif;
     font-size: 18px;
     font-weight: 600;
-    line-height: 1.3;
+    color: #23190F;
+    margin: 0 0 16px 0;
+    border: none;
+    padding: 0;
 }
 
-.bento-results {
+/* ── Results grid — 1.55fr 1fr with notes spanning full width ── */
+.pal-results-grid {
     display: grid;
-    grid-template-columns: 3fr 2fr;
+    grid-template-columns: 1.55fr 1fr;
     grid-template-rows: auto auto;
     grid-template-areas: "transcription confidence" "notes notes";
     gap: 12px;
+    margin-top: 24px;
 }
-.bento-transcription { grid-area: transcription; }
-.bento-confidence    { grid-area: confidence; }
-.bento-notes         { grid-area: notes; }
-.bento-results > .form { display: contents; }
+.pal-results-grid > .form { display: contents; }
+.pal-transcription-card { grid-area: transcription; }
+.pal-confidence-card    { grid-area: confidence; }
+.pal-notes-card         { grid-area: notes; }
 
-.upload-zone {
-    border: 2px dashed #C9A84C;
-    border-radius: 12px;
-    padding: 32px;
-    text-align: center;
+/* ── Notes entity cards grid ────────────────────────────────── */
+.pal-notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
 }
 
+.pal-note-card {
+    padding: 16px 18px;
+}
+
+.pal-note-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.pal-note-entity {
+    font-family: 'Spectral', Georgia, serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: #23190F;
+}
+
+.pal-note-type {
+    font-size: 11px;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.pal-note-desc {
+    font-size: 13px;
+    color: #6E6353;
+    line-height: 1.55;
+    margin: 0;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+}
+
+/* ── Segment toggle — gr.Radio styled as pill switcher ──────── */
+.pal-seg-toggle .wrap {
+    display: inline-flex !important;
+    border: 1px solid rgba(35,25,15,0.12) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+.pal-seg-toggle input[type="radio"] { display: none !important; }
+.pal-seg-toggle label {
+    padding: 6px 16px !important;
+    font-size: 13px !important;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif !important;
+    cursor: pointer !important;
+    color: #6E6353 !important;
+    background: transparent !important;
+    border: none !important;
+    margin: 0 !important;
+    transition: background 0.15s, color 0.15s;
+}
+.pal-seg-toggle input[type="radio"]:checked + label {
+    background: #AE3B2C !important;
+    color: #FBF8F0 !important;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
 .btn-primary {
-    background-color: #C9A84C !important;
-    color: #0F172A !important;
+    background-color: #AE3B2C !important;
+    color: #FBF8F0 !important;
     font-weight: 600 !important;
     border-radius: 8px !important;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif !important;
+    box-shadow: 0 2px 8px rgba(174,59,44,0.35) !important;
+    border: none !important;
+    width: 100%;
 }
+.btn-primary:hover { background-color: #8f3024 !important; }
 
-/* Override Gradio CSS variables for dark theme compatibility */
-.gradio-container {
-    --loader-color: #C9A84C !important;
-    --block-background-fill: rgba(15, 23, 42, 0.85) !important;
-    --body-text-color: #F1F5F9 !important;
-    --body-text-color-subdued: #94A3B8 !important;
-    --border-color-primary: rgba(201, 168, 76, 0.2) !important;
-    --background-fill-secondary: rgba(30, 41, 59, 0.7) !important;
-    --background-fill-primary: rgba(15, 23, 42, 0.95) !important;
-}
-
-/* Progress bar fill — uses --loader-color via var() so inherits amber */
-/* ETA text visibility */
-.meta-text, .meta-text-center, .progress-level-inner {
-    color: #F1F5F9 !important;
-}
-
-/* Generating pulse border uses --color-accent; make it amber */
-.generating {
-    border-color: #C9A84C !important;
-}
-
-.btn-reset {
-    border: 1px solid #C9A84C !important;
-    color: #C9A84C !important;
+.btn-ghost {
     background: transparent !important;
+    border: 1px solid rgba(35,25,15,0.20) !important;
+    color: #23190F !important;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif !important;
     border-radius: 8px !important;
 }
+.btn-ghost:hover { background: rgba(35,25,15,0.05) !important; }
 
-.status-line {
+/* ── Metadata bar ───────────────────────────────────────────── */
+.pal-meta-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.pal-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(35,25,15,0.12);
+    background: #FBF8F0;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    color: #6E6353;
+}
+.pal-meta-pill strong { color: #23190F; font-weight: 500; }
+
+/* ── Status / completion text ───────────────────────────────── */
+.pal-status {
     font-size: 13px;
-    color: #C9A84C;
-    font-family: system-ui, -apple-system, sans-serif;
+    color: #2F6E5A;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
     min-height: 20px;
 }
 
-.app-title h2 {
-    font-size: 28px;
-    font-weight: 600;
-    line-height: 1.2;
-    color: #F1F5F9;
+/* ── Transcription text modes ───────────────────────────────── */
+.pal-transcription-card textarea {
+    font-family: 'Spectral', Georgia, serif !important;
+    font-size: 18px !important;
+    line-height: 1.95 !important;
+    color: #23190F !important;
+    background: transparent !important;
+    border: none !important;
 }
 
-.gradio-container, .gradio-container * {
-    color: #CBD5E1;
-}
+/* ── Gradio generating pulse ────────────────────────────────── */
+.generating { border-color: #AE3B2C !important; }
+.progress-level-inner { color: #23190F !important; }
+.meta-text, .meta-text-center { color: #23190F !important; }
 """
 
 
@@ -387,7 +556,7 @@ def toggle_view(view: str, raw: str, cleaned: str) -> str:
     Returns:
         The appropriate text string for the Transcription Textbox.
     """
-    return raw if view == "Raw" else cleaned
+    return raw if view == "Original" else cleaned
 
 
 def reset_manuscript() -> tuple:
@@ -407,13 +576,20 @@ def reset_manuscript() -> tuple:
 
 
 with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") as demo:
-    with gr.Column(elem_classes=["app-title"]):
-        gr.Markdown("## Palimpsest")
+    gr.HTML("""
+<div class="pal-header">
+  <div class="pal-logo-mark">P</div>
+  <div>
+    <div class="pal-header-title">Palimpsest</div>
+    <div class="pal-header-sub">Transcripción paleográfica de manuscritos históricos</div>
+  </div>
+</div>
+""")
 
     raw_state = gr.State(value="")
     cleaned_state = gr.State(value="")
 
-    with gr.Column(elem_classes=["upload-zone"]):
+    with gr.Column(elem_classes=["pal-upload-zone"]):
         file_input = gr.File(
             label="Subir imagen de manuscrito",
             file_types=[".jpg", ".jpeg", ".png"],
@@ -422,12 +598,12 @@ with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") 
         )
         submit_btn = gr.Button("Transcribir", variant="primary", elem_classes=["btn-primary"])
 
-    status_md = gr.Markdown("", elem_classes=["status-line"])
+    status_md = gr.HTML("", elem_classes=["pal-status"])
 
-    with gr.Column(elem_classes=["bento-results"]):
-        with gr.Column(visible=False, elem_classes=["glass-card", "bento-transcription"]) as transcription_section:
+    with gr.Column(elem_classes=["pal-results-grid"]):
+        with gr.Column(visible=False, elem_classes=["pal-card", "pal-transcription-card"]) as transcription_section:
             gr.Markdown("### Transcripción")
-            view_toggle = gr.Radio(label="Vista:", choices=["Raw", "Limpiada"], value="Limpiada")
+            view_toggle = gr.Radio(label="Vista:", choices=["Limpiada", "Original"], value="Limpiada", elem_classes=["pal-seg-toggle"])
             transcription_box = gr.Textbox(
                 label="",
                 interactive=False,
@@ -435,15 +611,15 @@ with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") 
                 placeholder="(la transcripción aparecerá aquí)",
             )
 
-        with gr.Column(visible=False, elem_classes=["glass-card", "bento-confidence"]) as confidence_section:
+        with gr.Column(visible=False, elem_classes=["pal-card", "pal-confidence-card"]) as confidence_section:
             gr.Markdown("### Mapa de Confianza")
             confidence_html = gr.HTML(value="")
 
-        with gr.Column(visible=False, elem_classes=["glass-card", "bento-notes"]) as notes_section:
+        with gr.Column(visible=False, elem_classes=["pal-card", "pal-notes-card"]) as notes_section:
             gr.Markdown("### Notas Históricas")
             notes_md = gr.Markdown(value="")
 
-    reset_btn = gr.Button("Nueva transcripción", visible=False, elem_classes=["btn-reset"])
+    reset_btn = gr.Button("Nueva transcripción", visible=False, elem_classes=["btn-ghost"])
 
     outputs_full = [
         transcription_box,

@@ -156,6 +156,30 @@ Plans:
 
 **UI hint**: yes
 
+### Phase 6: UI Redesign — Claude Design
+
+**Goal**: Replace the dark glassmorphism UI with the Claude Design handoff: light parchment theme (`#F1EADA`), Spectral/Hanken Grotesk/IBM Plex Mono fonts, 3 explicit states (initial / processing / results), step-by-step progress panel, metadata bar, historical notes as cards grid, confidence map with hover tooltips, copy button.
+**Depends on**: Phase 5
+**Requirements**: UI-R-01, UI-R-02, UI-R-03, UI-R-04, UI-R-05
+**Success Criteria** (what must be TRUE):
+
+  1. Initial state shows only upload zone + submit button on `#F1EADA` parchment background with Spectral/Hanken Grotesk fonts loaded via Google Fonts
+  2. Processing state shows 4-step progress list (Restauración / Transcripción paleográfica / Análisis histórico / Mapa de confianza) with animated spinner per active step and progress bar
+  3. Results state shows `1.55fr 1fr` grid (Transcripción | Mapa de confianza) + notes as responsive cards grid (`repeat(auto-fill, minmax(290px,1fr))`) + metadata bar (Tiempo / Modelo / Palabras / Inciertas / Confianza)
+  4. Raw/Limpiada toggle switches text without re-run; Copy button copies current text to clipboard
+  5. Reset returns to initial state; app still runs via `python -m palimpsest.app` and Docker deploy unchanged
+
+**Plans**: 0/2 plans complete
+
+Plans:
+**Wave 1**
+
+- [ ] 06-01-PLAN.md — CSS theme overhaul: parchment palette, Google Fonts, design tokens, 3-state layout skeleton
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 06-02-PLAN.md — Processing state with gr.Progress + step list, metadata bar, notes cards HTML, copy button, confidence hover
+
 ## Progress
 
 **Execution Order:**

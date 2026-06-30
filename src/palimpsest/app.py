@@ -52,6 +52,13 @@ CUSTOM_CSS = """
 .gradio-container {
     background-color: #0F172A !important;
     min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Prevent layout-shift scroll when result cards reveal */
+body, html {
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
 }
 
 .glass-card {
@@ -98,6 +105,29 @@ CUSTOM_CSS = """
     color: #0F172A !important;
     font-weight: 600 !important;
     border-radius: 8px !important;
+}
+
+/* Loading state: keep button visible, make spinner contrast against amber */
+.btn-primary.pending,
+.btn-primary[disabled],
+.btn-primary svg.animate-spin {
+    color: #0F172A !important;
+    opacity: 0.85;
+}
+
+/* Gradio 6.x progress bar + status toast — ensure visible on dark bg */
+.progress-bar,
+.progress-bar-wrap,
+.eta-bar {
+    background-color: rgba(201, 168, 76, 0.3) !important;
+}
+.progress-bar .progress,
+.progress-level-inner {
+    background-color: #C9A84C !important;
+    color: #0F172A !important;
+}
+.progress-text, .eta-text {
+    color: #F1F5F9 !important;
 }
 
 .btn-reset {

@@ -169,12 +169,12 @@ Plans:
   4. Raw/Limpiada toggle switches text without re-run; Copy button copies current text to clipboard
   5. Reset returns to initial state; app still runs via `python -m palimpsest.app` and Docker deploy unchanged
 
-**Plans**: 0/2 plans complete
+**Plans**: 1/2 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 06-01-PLAN.md — CSS theme overhaul: parchment palette, Google Fonts, design tokens, 3-state layout skeleton
+- [x] 06-01-PLAN.md — CSS theme overhaul: parchment palette, Google Fonts, design tokens, 3-state layout skeleton
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

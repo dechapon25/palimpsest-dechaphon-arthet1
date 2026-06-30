@@ -61,6 +61,19 @@ body, html {
     scrollbar-gutter: stable;
 }
 
+/* Gradio 6.x wraps app in overflow:auto containers — normalize */
+.gradio-container > .contain,
+.gradio-container > .main,
+.gradio-container .app,
+.gradio-container .wrap {
+    overflow: visible !important;
+}
+
+/* Prevent the status-tracker overlay from expanding parent height */
+.gradio-container .wrap[style*="position"] {
+    overflow: hidden !important;
+}
+
 .glass-card {
     background: rgba(30, 41, 59, 0.6);
     backdrop-filter: blur(12px);
@@ -107,27 +120,26 @@ body, html {
     border-radius: 8px !important;
 }
 
-/* Loading state: keep button visible, make spinner contrast against amber */
-.btn-primary.pending,
-.btn-primary[disabled],
-.btn-primary svg.animate-spin {
-    color: #0F172A !important;
-    opacity: 0.85;
+/* Override Gradio CSS variables for dark theme compatibility */
+.gradio-container {
+    --loader-color: #C9A84C !important;
+    --block-background-fill: rgba(15, 23, 42, 0.85) !important;
+    --body-text-color: #F1F5F9 !important;
+    --body-text-color-subdued: #94A3B8 !important;
+    --border-color-primary: rgba(201, 168, 76, 0.2) !important;
+    --background-fill-secondary: rgba(30, 41, 59, 0.7) !important;
+    --background-fill-primary: rgba(15, 23, 42, 0.95) !important;
 }
 
-/* Gradio 6.x progress bar + status toast — ensure visible on dark bg */
-.progress-bar,
-.progress-bar-wrap,
-.eta-bar {
-    background-color: rgba(201, 168, 76, 0.3) !important;
-}
-.progress-bar .progress,
-.progress-level-inner {
-    background-color: #C9A84C !important;
-    color: #0F172A !important;
-}
-.progress-text, .eta-text {
+/* Progress bar fill — uses --loader-color via var() so inherits amber */
+/* ETA text visibility */
+.meta-text, .meta-text-center, .progress-level-inner {
     color: #F1F5F9 !important;
+}
+
+/* Generating pulse border uses --color-accent; make it amber */
+.generating {
+    border-color: #C9A84C !important;
 }
 
 .btn-reset {

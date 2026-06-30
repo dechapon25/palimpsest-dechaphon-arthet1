@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-06-30T23:21:59.233Z",
+  "phase": "06",
+  "phase_name": "UI Redesign — Claude Design",
+  "phase_dir": ".planning/phases/06-ui-redesign-claude-design",
+  "plan": 0,
+  "task": 0,
+  "total_tasks": 4,
+  "status": "paused",
+  "completed_tasks": [],
+  "remaining_tasks": [
+    {"id": 1, "name": "06-01 Wave 1: CSS theme overhaul", "status": "not_started"},
+    {"id": 2, "name": "06-01 Wave 1: Gradio layout elem_classes update", "status": "not_started"},
+    {"id": 3, "name": "06-02 Wave 2: Processing state + metadata + notes cards + copy button", "status": "not_started"},
+    {"id": 4, "name": "06-02 Wave 2: Confidence highlight logic update", "status": "not_started"}
+  ],
+  "blockers": [
+    {"description": "YouTube video not recorded", "type": "human_action", "workaround": "none — blocks Kaggle submission (deadline 2026-07-06)"},
+    {"description": "docs/guion.md has truncated narration text", "type": "human_action", "workaround": "fix text before recording"}
+  ],
+  "async_jobs": [],
+  "human_actions_pending": [
+    {"action": "Record YouTube video (≤5 min)", "context": "Required for Kaggle submission. Guion at docs/guion.md (needs truncation fix). Deadline 2026-07-06.", "blocking": true},
+    {"action": "Add YouTube URL to docs/writeup.md and submit to Kaggle", "context": "Last step for competition entry.", "blocking": true}
+  ],
+  "decisions": [
+    {"decision": "Light parchment theme (#F1EADA) from Claude Design handoff", "rationale": "Matches manuscript aesthetic, replaces dark glassmorphism", "phase": "06"},
+    {"decision": "Terracotta accent #AE3B2C instead of amber #C9A84C", "rationale": "Claude Design spec", "phase": "06"},
+    {"decision": "CSS-only processing animation (no Python generator)", "rationale": "Avoids outputs_full complexity mid-run", "phase": "06"},
+    {"decision": "nginx + certbot SSL on VPS, container stays on 7860 internally", "rationale": "No port in URL, HTTPS for Kaggle demo link", "phase": "04"}
+  ],
+  "uncommitted_files": [
+    ".claude/settings.json",
+    "data/samples/colon.jpg:Zone.Identifier",
+    "openpencil-0.7.5/ (ignore)",
+    "v0.7.5.tar.gz (ignore)"
+  ],
+  "next_action": "/gsd-execute-phase 06 — executes UI redesign Wave 1 + Wave 2",
+  "context_notes": "Phase 06 fully planned, not executed. Deploy pipeline working (VPS SSH key ~/.ssh/oracle_a1_ed25519, repo ~/dockerpalimpsest). claude-design MCP added to user config for DesignSync tool access."
+}

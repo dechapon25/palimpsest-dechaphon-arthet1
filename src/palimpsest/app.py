@@ -31,6 +31,7 @@ import html
 import json
 import os
 import sys
+import time
 
 import gradio as gr
 from dotenv import load_dotenv
@@ -45,6 +46,32 @@ load_dotenv()
 # Confidence threshold — words scoring below this are uncertain.
 # Mirrors CONFIDENCE_THRESHOLD in verification.py (D-04).
 CONFIDENCE_THRESHOLD = 0.7
+HIGHLIGHT_THRESHOLD = 0.95  # Design spec: score >= 0.95 → plain; score < 0.95 → amber highlight
+
+PROCESSING_HTML = """
+<div class="pal-card pal-processing-card">
+  <div class="pal-card-title">Transcribiendo…</div>
+  <div class="pal-progress-bar-wrap"><div class="pal-progress-bar"></div></div>
+  <ul class="pal-steps">
+    <li class="step-active">
+      <span class="step-icon"><span class="step-icon-spin">⟳</span></span>
+      Restauración de la imagen
+    </li>
+    <li>
+      <span class="step-icon">·</span>
+      Transcripción paleográfica
+    </li>
+    <li>
+      <span class="step-icon">·</span>
+      Análisis histórico
+    </li>
+    <li>
+      <span class="step-icon">·</span>
+      Mapa de confianza
+    </li>
+  </ul>
+</div>
+"""
 
 CUSTOM_CSS = """
 /* Palimpsest — Parchment Theme (Claude Design handoff) */
@@ -333,6 +360,62 @@ body::before {
 .generating { border-color: #AE3B2C !important; }
 .progress-level-inner { color: #23190F !important; }
 .meta-text, .meta-text-center { color: #23190F !important; }
+
+/* ── Processing card ────────────────────────────────────────── */
+.pal-processing-card {
+    margin: 16px 0;
+}
+.pal-processing-card .pal-card-title {
+    font-family: 'Spectral', Georgia, serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #23190F;
+    margin: 0 0 14px 0;
+}
+.pal-progress-bar-wrap {
+    height: 6px;
+    background: rgba(35,25,15,0.10);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+.pal-progress-bar {
+    height: 100%;
+    background: #AE3B2C;
+    border-radius: 999px;
+    animation: pal-progress 30s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    width: 0%;
+}
+@keyframes pal-progress { from { width: 0% } to { width: 88% } }
+.pal-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.pal-steps li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    color: #8A7E6B;
+}
+.pal-steps .step-active { color: #23190F; font-weight: 500; }
+.pal-steps .step-done   { color: #2F6E5A; }
+.step-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+.step-icon-spin { animation: pal-spin 1s linear infinite; display: inline-block; }
+@keyframes pal-spin { to { transform: rotate(360deg); } }
 """
 
 
@@ -354,8 +437,8 @@ def render_confidence_html(word_scores: list[dict]) -> str:
     """
     if not word_scores:
         return (
-            '<div style="font-size:16px;line-height:1.5;font-family:inherit">'
-            "(confidence map will appear after processing)"
+            '<div style="font-size:14px;color:#8A7E6B;font-family:\'Hanken Grotesk\',system-ui,sans-serif">'
+            "(el mapa de confianza aparecerá tras el procesamiento)"
             "</div>"
         )
 
@@ -375,22 +458,25 @@ def render_confidence_html(word_scores: list[dict]) -> str:
         except (TypeError, ValueError):
             score = 1.0  # treat unparseable score as fully confident
 
-        if score < CONFIDENCE_THRESHOLD:
-            # opacity = 1 - score; brighter orange = more uncertain (D-15)
-            opacity = round(1 - score, 2)
+        if score < HIGHLIGHT_THRESHOLD:
+            # Alpha formula from design spec: min(0.62, (1-score)*1.05) + 0.05
+            alpha = round(min(0.62, (1 - score) * 1.05) + 0.05, 3)
             span = (
-                f'<span style="background-color: rgba(255, 165, 0, {opacity}); '
-                f'padding: 0 2px;" '
-                f'title="score: {score} | reason: {escaped_reason}">'
+                f'<span style="'
+                f"background-color: rgba(217,149,46,{alpha}); "
+                f"box-shadow: inset 0 -2px 0 rgba(174,59,44,0.42); "
+                f"padding: 0 2px; "
+                f"border-radius: 2px; "
+                f'cursor: help;" '
+                f'title="score: {score:.2f} | {escaped_reason}">'
                 f"{escaped_word}</span>"
             )
             parts.append(span)
         else:
-            # Confident word — plain text, no span (D-14 threshold)
             parts.append(escaped_word)
 
     body = " ".join(parts)
-    return f'<div style="font-size:16px;line-height:1.5;font-family:inherit">{body}</div>'
+    return f'<div style="font-size:16px;line-height:1.8;font-family:\'Spectral\',Georgia,serif;color:#23190F">{body}</div>'
 
 
 def _md_cell(value: str) -> str:
@@ -540,6 +626,7 @@ async def transcribe_manuscript(file_path: str) -> tuple:
         gr.update(visible=True),
         gr.update(visible=True),
         "Procesamiento completado.",
+        gr.update(visible=False),  # processing_section
     )
 
 
@@ -560,19 +647,25 @@ def toggle_view(view: str, raw: str, cleaned: str) -> str:
 
 
 def reset_manuscript() -> tuple:
-    """Reset all UI state and hide result panels. Returns 10-tuple matching submit_btn outputs."""
+    """Reset all UI state and hide result panels. Returns 11-tuple matching outputs_full."""
     return (
         "",                          # transcription_box
         "",                          # raw_state
         "",                          # cleaned_state
-        "",                          # notes_md
+        "",                          # notes_md (gr.HTML)
         "",                          # confidence_html
         gr.update(visible=False),    # transcription_section
         gr.update(visible=False),    # confidence_section
         gr.update(visible=False),    # notes_section
         gr.update(visible=False),    # reset_btn
-        "",                          # status_md
+        "",                          # status_md (gr.HTML)
+        gr.update(visible=False),    # processing_section
     )
+
+
+def show_processing() -> gr.update:
+    """Show the processing state card. Called before transcribe_manuscript via .then() chain."""
+    return gr.update(visible=True)
 
 
 with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") as demo:
@@ -598,6 +691,8 @@ with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") 
         )
         submit_btn = gr.Button("Transcribir", variant="primary", elem_classes=["btn-primary"])
 
+    processing_section = gr.HTML(value=PROCESSING_HTML, visible=False)
+
     status_md = gr.HTML("", elem_classes=["pal-status"])
 
     with gr.Column(elem_classes=["pal-results-grid"]):
@@ -622,19 +717,24 @@ with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") 
     reset_btn = gr.Button("Nueva transcripción", visible=False, elem_classes=["btn-ghost"])
 
     outputs_full = [
-        transcription_box,
-        raw_state,
-        cleaned_state,
-        notes_md,
-        confidence_html,
-        transcription_section,
-        confidence_section,
-        notes_section,
-        reset_btn,
-        status_md,
+        transcription_box,      # 0
+        raw_state,              # 1
+        cleaned_state,          # 2
+        notes_md,               # 3
+        confidence_html,        # 4
+        transcription_section,  # 5
+        confidence_section,     # 6
+        notes_section,          # 7
+        reset_btn,              # 8
+        status_md,              # 9
+        processing_section,     # 10  ← NEW
     ]
 
     submit_btn.click(
+        fn=show_processing,
+        inputs=[],
+        outputs=[processing_section],
+    ).then(
         fn=transcribe_manuscript,
         inputs=[file_input],
         outputs=outputs_full,

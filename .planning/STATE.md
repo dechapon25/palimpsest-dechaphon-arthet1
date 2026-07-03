@@ -111,6 +111,12 @@ None yet.
 - Open question Q1: Demo language (Spanish PARES docs vs English LoC) — resolve before recording video in Phase 4
 - Open question Q5: Cloud Run real deploy (adds judging points but costs time) — committed in DEP-02; re-evaluate if timeline slips in Phase 4
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260703-37j | Fix processing card stuck on error in app.py, update writeup.md and README.md | 2026-07-03 | 677be09 | [260703-37j-fix-processing-card-stuck-on-error-in-ap](./quick/260703-37j-fix-processing-card-stuck-on-error-in-ap/) |
+
 ## Deferred Items
 
 | Category | Item | Status | Deferred At |

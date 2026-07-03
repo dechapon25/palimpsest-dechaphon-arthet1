@@ -479,50 +479,113 @@ def render_confidence_html(word_scores: list[dict]) -> str:
     return f'<div style="font-size:16px;line-height:1.8;font-family:\'Spectral\',Georgia,serif;color:#23190F">{body}</div>'
 
 
-def _md_cell(value: str) -> str:
-    """Escape Markdown table special characters in a single cell value (WR-01)."""
-    return value.replace("|", "\\|").replace("\n", " ").replace("\r", "")
+_TYPE_COLORS: dict[str, str] = {
+    "Persona":     "#AE3B2C",
+    "Lugar":       "#2F6E5A",
+    "Fecha":       "#B07A1E",
+    "Documento":   "#4A5A86",
+    "Institución": "#4A5A86",
+}
 
 
-def render_context_table(context_notes: list[dict]) -> str:
-    """Convert context_notes entity list to a Markdown table string.
+def render_context_cards(context_notes: list[dict]) -> str:
+    """Convert context_notes list to an HTML card grid (replaces render_context_table).
 
-    Produces a Markdown table with columns: Entity | Type | Description | Date | Source.
-    Descriptions are truncated to 120 characters to keep the table readable (D-09,
-    UI-SPEC helper contract).
+    Returns a div.pal-notes-grid containing one .pal-note-card per entity.
+    html.escape() applied to all LLM-generated strings (SEC-04, T-03-03).
 
     Args:
         context_notes: List of entity dicts from the context agent.
 
     Returns:
-        Markdown table string, or a no-entities message if the list is empty.
+        HTML string with the notes grid, or a no-entities message.
     """
     if not context_notes:
-        return "No historical entities found in this document."
+        return (
+            "<p style='color:#6E6353;font-family:Hanken Grotesk,system-ui,sans-serif;"
+            "font-size:14px;margin:0'>No se encontraron entidades históricas.</p>"
+        )
 
-    header = "| Entity | Type | Description | Date | Source |"
-    separator = "|--------|------|-------------|------|--------|"
-    rows = []
-
+    cards: list[str] = []
     for note in context_notes:
         if not isinstance(note, dict):
             continue  # skip null / non-dict elements from LLM (CR-03)
-        entity = str(note.get("entity", ""))
-        entity_type = str(note.get("type", ""))
-        description = str(note.get("description", ""))
-        if len(description) > 120:
-            description = description[:120] + "..."
-        dates = str(note.get("dates", ""))
-        # Source: prefer source_url, fall back to wikidata_id, then empty (D-09 schema)
-        source = str(
-            note.get("source_url") or note.get("wikidata_id") or ""
-        )
-        rows.append(
-            f"| {_md_cell(entity)} | {_md_cell(entity_type)} | "
-            f"{_md_cell(description)} | {_md_cell(dates)} | {_md_cell(source)} |"
+        entity = html.escape(str(note.get("entity", "")))
+        entity_type = html.escape(str(note.get("type", "")))
+        description = html.escape(str(note.get("description", "")))
+        color = _TYPE_COLORS.get(entity_type, "#4A5A86")
+        # Inline alpha on border/bg to avoid CSS custom property injection risk
+        bg_color = f"{color}22"
+        border_color = f"{color}55"
+        cards.append(
+            f'<div class="pal-card pal-note-card">'
+            f'<div class="pal-note-header">'
+            f'<span class="pal-note-entity">{entity}</span>'
+            f'<span class="pal-note-type" style="background:{bg_color};color:{color};'
+            f'border:1px solid {border_color}">{entity_type}</span>'
+            f"</div>"
+            f'<p class="pal-note-desc">{description}</p>'
+            f"</div>"
         )
 
-    return header + "\n" + separator + "\n" + "\n".join(rows)
+    inner = "".join(cards)
+    return f'<div class="pal-notes-grid">{inner}</div>'
+
+
+def render_metadata_bar(
+    confidence_list: list[dict],
+    cleaned_text: str,
+    elapsed: float,
+) -> str:
+    """Render the 5-pill metadata bar shown after successful transcription.
+
+    Pills: Tiempo · Modelo · Palabras · Inciertas · Confianza.
+    Uses CONFIDENCE_THRESHOLD (0.7) to count uncertain words for the
+    'Inciertas' pill; average score is displayed as Confianza %.
+
+    Args:
+        confidence_list: Word-score dicts from confidence_map.
+        cleaned_text: Cleaned transcription text (for word count).
+        elapsed: Pipeline wall-clock seconds.
+
+    Returns:
+        HTML string with div.pal-meta-bar containing span.pal-meta-pill elements.
+    """
+    model_label = os.environ.get("GEMINI_MODEL", "gemini-2.5-pro")
+
+    word_count = len(cleaned_text.split()) if cleaned_text.strip() else 0
+
+    uncertain_count = 0
+    total_score = 0.0
+    valid_count = 0
+    for entry in confidence_list:
+        if not isinstance(entry, dict):
+            continue
+        score_raw = entry.get("score")
+        try:
+            score = float(score_raw) if score_raw is not None else 1.0
+        except (TypeError, ValueError):
+            score = 1.0
+        if score < CONFIDENCE_THRESHOLD:
+            uncertain_count += 1
+        total_score += score
+        valid_count += 1
+
+    avg_conf = (total_score / valid_count * 100) if valid_count else 100.0
+    elapsed_str = f"{elapsed:.0f}s" if elapsed < 60 else f"{elapsed / 60:.1f} min"
+
+    pills = [
+        ("Tiempo", elapsed_str),
+        ("Modelo", model_label),
+        ("Palabras", str(word_count)),
+        ("Inciertas", str(uncertain_count)),
+        ("Confianza", f"{avg_conf:.0f}%"),
+    ]
+    pills_html = "".join(
+        f'<span class="pal-meta-pill"><strong>{label}</strong>&nbsp;{value}</span>'
+        for label, value in pills
+    )
+    return f'<div class="pal-meta-bar">{pills_html}</div>'
 
 
 async def transcribe_manuscript(file_path: str) -> tuple:
@@ -558,7 +621,9 @@ async def transcribe_manuscript(file_path: str) -> tuple:
     # WR-02: handler is now async; await run_pipeline() directly.
     # Gradio 4+ accepts coroutines as fn= arguments natively, so asyncio.run()
     # is no longer needed and would raise RuntimeError in embedded-loop contexts.
+    start_time = time.time()
     result = await run_pipeline(clean_bytes, mime_type, filename)
+    elapsed = time.time() - start_time
 
     # D-11 (UI errors): surface pipeline errors as gr.Error pop-up.
     if result.get("status") == "error":
@@ -616,17 +681,19 @@ async def transcribe_manuscript(file_path: str) -> tuple:
         confidence_list = []
 
     return (
-        cleaned_text,
-        raw_text,
-        cleaned_text,
-        render_context_table(context_list),
-        render_confidence_html(confidence_list),
-        gr.update(visible=True),
-        gr.update(visible=True),
-        gr.update(visible=True),
-        gr.update(visible=True),
-        "Procesamiento completado.",
-        gr.update(visible=False),  # processing_section
+        cleaned_text,                               # 0 transcription_box
+        raw_text,                                   # 1 raw_state
+        cleaned_text,                               # 2 cleaned_state
+        render_context_cards(context_list),         # 3 notes_md (gr.HTML)
+        render_confidence_html(confidence_list),    # 4 confidence_html
+        gr.update(visible=True),                    # 5 transcription_section
+        gr.update(visible=True),                    # 6 confidence_section
+        gr.update(visible=True),                    # 7 notes_section
+        gr.update(visible=True),                    # 8 reset_btn
+        render_metadata_bar(                        # 9 status_md (gr.HTML)
+            confidence_list, cleaned_text, elapsed
+        ),
+        gr.update(visible=False),                   # 10 processing_section
     )
 
 
@@ -699,6 +766,12 @@ with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") 
         with gr.Column(visible=False, elem_classes=["pal-card", "pal-transcription-card"]) as transcription_section:
             gr.Markdown("### Transcripción")
             view_toggle = gr.Radio(label="Vista:", choices=["Limpiada", "Original"], value="Limpiada", elem_classes=["pal-seg-toggle"])
+            copy_btn = gr.Button(
+                "Copiar texto",
+                elem_classes=["btn-ghost"],
+                scale=0,
+                size="sm",
+            )
             transcription_box = gr.Textbox(
                 label="",
                 interactive=False,
@@ -711,8 +784,8 @@ with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") 
             confidence_html = gr.HTML(value="")
 
         with gr.Column(visible=False, elem_classes=["pal-card", "pal-notes-card"]) as notes_section:
-            gr.Markdown("### Notas Históricas")
-            notes_md = gr.Markdown(value="")
+            gr.HTML("<h3>Notas Históricas</h3>")
+            notes_md = gr.HTML(value="")
 
     reset_btn = gr.Button("Nueva transcripción", visible=False, elem_classes=["btn-ghost"])
 
@@ -750,6 +823,18 @@ with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") 
         fn=toggle_view,
         inputs=[view_toggle, raw_state, cleaned_state],
         outputs=[transcription_box],
+    )
+
+    copy_btn.click(
+        fn=None,
+        inputs=None,
+        outputs=None,
+        js=(
+            "() => { "
+            "const ta = document.querySelector('.pal-transcription-card textarea'); "
+            "if (ta) navigator.clipboard.writeText(ta.value || '').catch(() => {}); "
+            "}"
+        ),
     )
 
 

@@ -116,6 +116,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260703-37j | Fix processing card stuck on error in app.py, update writeup.md and README.md | 2026-07-03 | 677be09 | [260703-37j-fix-processing-card-stuck-on-error-in-ap](./quick/260703-37j-fix-processing-card-stuck-on-error-in-ap/) |
+| fast-1 | Repair docs/guion.md: truncated narration, HTTPS URL, Columbus demo, cards UI | 2026-07-03 | aa58286 | — |
 
 ## Deferred Items
 

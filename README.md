@@ -41,7 +41,7 @@ Scanned manuscript image
          ▼
 ┌─────────────────┐
 │ Gradio UI        │  raw_transcription · cleaned_transcription
-│ Output           │  context_notes (entity table) · confidence_map (highlights)
+│ Output           │  context_notes (notes cards) · confidence_map (highlights)
 └─────────────────┘
 ```
 
@@ -73,7 +73,7 @@ docker run -d -p 7860:7860 -e GOOGLE_API_KEY=your-key palimpsest
 
 ## Live Demo
 
-**Public URL:** http://palimpsest.cpaz.es:7860/
+**Public URL:** https://palimpsest.cpaz.es
 
 ## Output
 
@@ -102,13 +102,15 @@ src/palimpsest/
 │   ├── transcription.py    # Gemini Pro vision agent
 │   ├── cleaning.py         # Text cleaning agent + AgentTool wrapper
 │   ├── context.py          # Context enrichment agent with McpToolset
+│   ├── verification.py     # Confidence scoring agent
 │   └── orchestrator.py     # SequentialAgent pipeline + run_pipeline()
 ├── mcp/
 │   ├── server.py           # FastMCP server with 4 historical-context tools
 │   └── abbreviations.py    # Spanish paleographic abbreviation dictionary
 ├── security/
 │   └── intake.py           # Document validation and EXIF stripping
-└── run.py                  # CLI entry point
+├── run.py                  # CLI entry point
+└── app.py                  # Gradio UI (demo interface)
 ```
 
 ## Requirements
@@ -124,7 +126,7 @@ src/palimpsest/
 | 1. MVP Linear Pipeline | Transcription agent + intake security | ✓ Complete |
 | 2. Full Multi-Agent System | Cleaning + MCP server + context agent | ✓ Complete |
 | 3. Verification + Gradio UI | Confidence scoring + demo interface | ✓ Complete |
-| 4. Deploy + Submission | Docker + Oracle VM + Kaggle writeup + video | ✓ Complete |
+| 4. Deploy + Submission | Docker + Oracle VM + Kaggle writeup + video | In progress |
 
 ## License
 

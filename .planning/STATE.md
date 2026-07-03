@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 05
+current_phase: 06
+current_phase_name: ui-redesign-claude-design
 status: executing
 stopped_at: context exhaustion at 76% (2026-06-28)
-last_updated: "2026-06-30T23:28:30.322Z"
-last_activity: 2026-06-28
-last_activity_desc: Phase 05 complete
+last_updated: "2026-07-03T00:12:13.514Z"
+last_activity: 2026-07-03
+last_activity_desc: Phase 06 execution started
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 14
-  completed_plans: 12
-  percent: 67
-current_phase_name: ui-wizard-redesign
+  completed_plans: 13
+  percent: 83
 ---
 
 # Project State
@@ -24,14 +24,14 @@ current_phase_name: ui-wizard-redesign
 See: .planning/PROJECT.md (updated 2026-06-21)
 
 **Core value:** A researcher uploads a scan of a difficult historical manuscript and gets back a readable, enriched transcription with uncertainty markers — in one pipeline, without paleography expertise.
-**Current focus:** Phase 05 — ui-wizard-redesign
+**Current focus:** Phase 06 — ui-redesign-claude-design
 
 ## Current Position
 
-Phase: 05
-Plan: Not started
-Status: Executing Phase 05
-Last activity: 2026-06-28 — Phase 05 complete
+Phase: 06 (ui-redesign-claude-design) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-07-03 — Phase 06 execution started
 
 Progress: [██████████████████░░] 11/12 plans (92%)
 
@@ -67,6 +67,7 @@ Progress: [██████████████████░░] 11/12 p
 | Phase 03 P03 | 1m | 2 tasks | 2 files |
 | Phase 04 P01 | 3m | 2 tasks | 4 files |
 | Phase 04 P02 | 60min | 2 tasks | 0 files |
+| Phase 06 P06-02 | 10min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -118,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-06-30T23:28:30.316Z
+Last session: 2026-07-03T00:12:13.509Z
 Stopped at: Phase 05 complete — milestone v1.0 all phases done, pending README + Kaggle writeup + video
 Resume file: None

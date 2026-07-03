@@ -169,7 +169,7 @@ Plans:
   4. Raw/Limpiada toggle switches text without re-run; Copy button copies current text to clipboard
   5. Reset returns to initial state; app still runs via `python -m palimpsest.app` and Docker deploy unchanged
 
-**Plans**: 1/2 plans executed
+**Plans**: 2/2 plans complete
 
 Plans:
 **Wave 1**
@@ -178,7 +178,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 06-02-PLAN.md — Processing state with gr.Progress + step list, metadata bar, notes cards HTML, copy button, confidence hover
+- [x] 06-02-PLAN.md — Processing state with gr.Progress + step list, metadata bar, notes cards HTML, copy button, confidence hover
 
 ## Progress
 

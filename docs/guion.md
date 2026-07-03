@@ -7,51 +7,89 @@ Setup antes de grabar
 3. Micrófono activo
 4. Cierra todas las terminales — sin GOOGLE_API_KEY visible (T-04-W-01)
 5. Prepara en pestañas del navegador:
-  - http://palimpsest.cpaz.es:7860/
+  - https://palimpsest.cpaz.es
   - https://github.com/carlosapsa/palimpsest
 6. Prepara en editor (VSCode): orchestrator.py, mcp/server.py, cleaning.py, security/intake.py
-7. Prepara imagen: data/samples/pares_easy_18c.jpg lista para subir
+7. Prepara imagen: data/samples/colon_1498_15c.jpg lista para subir
 
 ---
 0:00–0:30 — El Problema
 
-Muestra: pares_easy_18c.jpg a pantalla completa
+Muestra: colon_1498_15c.jpg a pantalla completa
 
 Narra:
 
-▎ "This is an 18th-century Spanish colonial document frnial governor to the Viceroy. For most researchers, it'scompletely unreadable — not because it's damaged, but because the handwriting is dense colonial cursive, full of abbreviations that
-▎ disappeared from the language centuries ago. Without , documents like this stay locked. Palimpsest unlocksthem."
+▎ "This is a real legal fragment from Spain's national archives — a lawsuit
+▎ between Christopher Columbus and the Crown over the grants promised to him
+▎ for the discovery of the Americas. For most researchers, it's completely
+▎ unreadable — not because it's damaged, but because the handwriting is dense
+▎ archaic cursive, full of abbreviations that disappeared from the language
+▎ centuries ago. Without paleography training, documents like this stay
+▎ locked. Palimpsest unlocks them."
 
 ---
 0:30–1:00 — Arquitectura
 
-Muestra: README.md en el navegador (sección del diagram
+Muestra: README.md en el navegador (sección del diagrama de arquitectura)
 
 Narra:
 
-▎ "Palimpsest uses four specialized agents running in svelopment Kit. First, a Transcription Agent reads thehandwriting using Gemini Pro vision. Then a Cleaning Agent — packaged as a reusable ADK Agent Skill — expands abbreviations and archaic spelling. A Context Agent calls a FastMCP serusing Wikidata and Wikipedia. Finally, a VerificationAgent scores every word with a confidence value. The pipeline uses SequentialAgent from ADK — the four course concepts covered: multi-agent, MCP server, security features, and Agent
+▎ "Palimpsest uses four specialized agents running in sequence with Google's
+▎ Agent Development Kit. First, a Transcription Agent reads the handwriting
+▎ using Gemini Pro vision. Then a Cleaning Agent — packaged as a reusable ADK
+▎ Agent Skill — expands abbreviations and normalizes archaic spelling. A
+▎ Context Agent calls a FastMCP server with four historical-context tools,
+▎ using Wikidata and Wikipedia. Finally, a Verification Agent scores every
+▎ word with a confidence value. The pipeline is an ADK SequentialAgent — and
+▎ it covers the four course concepts: multi-agent orchestration, an MCP
+▎ server, security features, and an Agent Skill."
 
 ---
-1:00–3:30 — Demo en vivo                                                                                                                 
-Muestra: http://palimpsest.cpaz.es:7860/ en el navegador                                                                                 
-Narra:                                                                                                                                   
-▎ "Let me show it live. I'll upload the same 18th-century document."                                                                     
-Sube data/samples/pares_easy_18c.jpg. Mientras procesa (~30s):                                                                           
-▎ "The pipeline is running — transcription, cleaning, entity enrichment, verification — all in sequence."                                
-Cuando termine, muestra cada pestaña:                                                                                                    
-▎ "Raw transcription tab — this is what Gemini Pro vision reads directly from the handwriting. Notice the abbreviations: Exmo, V.E., Dn, dho."
+1:00–3:30 — Demo en vivo
 
-Cambia a Cleaned:
+Muestra: https://palimpsest.cpaz.es en el navegador
 
-▎ "Cleaning Agent expanded every abbreviation. Exmo becmes Vuestra Excelencia. Archaic spelling corrected."
+Narra:
 
-Cambia a Historical Notes:
+▎ "Let me show it live. I'll upload the Columbus document."
 
-▎ "Context Agent called the MCP server — Wikidata returlonial figures and places in this document."
+Sube data/samples/colon_1498_15c.jpg. Mientras procesa (~30s, se ve la tarjeta
+de progreso con los 4 pasos):
 
-Cambia a Confidence Highlights:
+▎ "The pipeline is running — you can see the four stages: image intake,
+▎ paleographic transcription, historical analysis, and the confidence map —
+▎ all in sequence."
 
-▎ "Orange words are below the 0.7 confidence threshold y where to focus their review."
+Cuando termine, recorre la página de resultados (una sola página, sin pestañas):
+
+Tarjeta Transcripción — toggle en "Original":
+
+▎ "This is what Gemini Pro vision reads directly from the handwriting. Notice
+▎ the abbreviations: Almirante is written 'Almir.te', 'S.M.' for Su Majestad,
+▎ 'dho' for dicho, 'I.dias' for Indias."
+
+Cambia el toggle a "Limpiada":
+
+▎ "The Cleaning Agent expanded every abbreviation. 'Almir.te' becomes
+▎ Almirante, 'S.M.' becomes Su Majestad, 'Pleyto' is normalized to Pleito.
+▎ Archaic spelling corrected, line structure preserved."
+
+Tarjeta Mapa de Confianza:
+
+▎ "Amber highlights mark words below the 0.95 confidence threshold — hover
+▎ shows the score and the reason. The researcher sees exactly where to focus
+▎ their review."
+
+Tarjetas de Notas Históricas (abajo):
+
+▎ "The Context Agent called the MCP server — Wikidata resolved Christopher
+▎ Columbus, the Catholic Monarchs, and the places in this document. Each card
+▎ shows the entity type and a short historical description."
+
+Barra de metadatos:
+
+▎ "And the metadata bar summarizes the run: processing time, model, word
+▎ count, uncertain words, and overall confidence."
 
 ---
 3:30–4:30 — Código
@@ -60,35 +98,43 @@ Muestra: VSCode, 4 archivos en secuencia rápida
 
 orchestrator.py (SequentialAgent):
 
-▎ "The SequentialAgent definition — four LlmAgents chained in order. This is the ADK multi-agent course concept."
+▎ "The SequentialAgent definition — four LlmAgents chained in order. This is
+▎ the ADK multi-agent course concept."
 
 mcp/server.py (herramientas FastMCP):
 
-▎ "The FastMCP server exposes four tools. Wikidata SPARQL and Wikipedia REST — no API key required."
+▎ "The FastMCP server exposes four tools. Wikidata SPARQL and Wikipedia REST —
+▎ no API key required."
 
 cleaning.py (AgentTool):
 
-▎ "The cleaning agent packaged as an AgentTool — reusable by any future agent. This is the ADK Agent Skill course concept."
+▎ "The cleaning agent packaged as an AgentTool — reusable by any future agent.
+▎ This is the ADK Agent Skill course concept."
 
 security/intake.py (filetype.guess):
 
-▎ "Security layer: magic-byte validation before Pillow parses the file, EXIF stripping, size limits, and prompt injection defense in every
-▎ agent's system prompt."
+▎ "Security layer: magic-byte validation before Pillow parses the file, EXIF
+▎ stripping, size limits, and prompt injection defense in every agent's
+▎ system prompt."
 
 ---
 4:30–5:00 — Cierre
 
-Muestra: navegador con http://palimpsest.cpaz.es:7860/ y github.com/carlosapsa/palimpsest
+Muestra: navegador con https://palimpsest.cpaz.es y github.com/carlosapsa/palimpsest
 
 Narra:
 
-▎ "Palimpsest is live at palimpsest.cpaz.es port 7860 — try it with any scanned colonial manuscript. The full source is on GitHub. Four course concepts: multi-agent ADK SequentialAgent, FasSEC-01 through SEC-04 security features, and a reusableADK Agent Skill. One pipeline, no paleography expertise required."
+▎ "Palimpsest is live at palimpsest dot cpaz dot es — try it with any scanned
+▎ historical Spanish manuscript. The full source is on GitHub. Four course
+▎ concepts: a multi-agent ADK SequentialAgent pipeline, a FastMCP server with
+▎ four tools, SEC-01 through SEC-04 security features, and a reusable ADK
+▎ Agent Skill. One pipeline, no paleography expertise required."
 
 ---
 Después de grabar
 
 1. Sube a YouTube — visibilidad Unlisted o Public
 2. Copia URL (https://youtu.be/XXXXX)
-3. Captura pantalla de la UI con pipeline completo (cov
-4. Envía señal de reanudación:
-submitted: kaggle_url=https://www.kaggle.com/... video=
+3. Captura pantalla de la UI con el pipeline completo (imagen de portada para el writeup)
+4. Añade la URL del video a docs/writeup.md
+5. Envía el submission a Kaggle con la URL del writeup y el video

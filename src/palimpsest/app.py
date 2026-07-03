@@ -8,13 +8,15 @@ Layout decisions (D-07 through D-17 from 03-CONTEXT.md):
 - D-09: Historical Notes rendered as a Markdown table via gr.Markdown component.
   Columns: Entity | Type | Description | Date | Source.
 - D-12: App lives at src/palimpsest/app.py. Launch: python -m palimpsest.app.
-- D-13: run_pipeline() is async; called via asyncio.run() inside a sync Gradio
-  click handler (safe in Gradio thread pool; no async Gradio handler needed).
+- D-13: run_pipeline() is async; the Gradio click handler is itself async and
+  awaits run_pipeline() directly (Gradio 4+ accepts coroutine handlers natively).
 
 UI requirements satisfied:
 - UI-01: gr.File upload + "Transcribe Manuscript" submit button.
 - UI-02: gr.Textbox shows cleaned transcription after submit.
-- UI-03: Uncertain words (score < 0.7) highlighted with orange/yellow spans in gr.HTML.
+- UI-03: Words scoring below the 0.95 HIGHLIGHT_THRESHOLD get amber highlight
+  spans in gr.HTML; the 0.7 CONFIDENCE_THRESHOLD is still used to count
+  "Inciertas" in the metadata bar.
 - UI-04: Historical entity notes rendered as Markdown table in gr.Markdown panel.
 - UI-05: Raw/Cleaned radio toggle switches Textbox content without re-running pipeline.
 
@@ -26,11 +28,9 @@ Security notes:
   displayed in Gradio outputs; gr.Error messages contain only user-visible text.
 """
 
-import asyncio
 import html
 import json
 import os
-import sys
 import time
 
 import gradio as gr
@@ -422,9 +422,9 @@ body::before {
 def render_confidence_html(word_scores: list[dict]) -> str:
     """Convert confidence_map word list to HTML with uncertainty highlights.
 
-    Uncertain words (score < CONFIDENCE_THRESHOLD) are wrapped in styled
-    <span> elements with an orange/yellow gradient background and a hover
-    tooltip showing score and reason (D-14, D-15, D-16).
+    Words scoring below HIGHLIGHT_THRESHOLD (0.95) are wrapped in styled
+    <span> elements with an amber background and a hover tooltip showing
+    score and reason (D-14, D-15, D-16).
 
     XSS prevention (SEC-04, T-03-03): html.escape() applied to both word
     and reason values before inserting into HTML attribute or content strings.
@@ -594,8 +594,10 @@ async def transcribe_manuscript(file_path: str) -> tuple:
     Accepts a plain str file path from gr.File(type="filepath") in Gradio 5+/6+.
     Does NOT use a .name attribute — file_path is already a str (RESEARCH.md Pitfall 4).
 
-    Returns a 5-tuple mapped to Gradio outputs:
-        (transcription_box, raw_state, cleaned_state, notes_md, confidence_html)
+    Returns an 11-tuple mapped to Gradio outputs (outputs_full):
+        (transcription_box, raw_state, cleaned_state, notes_md, confidence_html,
+         transcription_section, confidence_section, notes_section, reset_btn,
+         status_md, processing_section)
 
     Error handling (D-11): raises gr.Error() for both intake failures and pipeline
     errors. Gradio displays these as a red pop-up banner — no broken UI state.
@@ -604,7 +606,9 @@ async def transcribe_manuscript(file_path: str) -> tuple:
         file_path: Path string returned by gr.File(type="filepath").
 
     Returns:
-        5-tuple: (cleaned_text, raw_text, cleaned_text, markdown_table, html_string)
+        11-tuple: (cleaned_text, raw_text, cleaned_text, notes_cards_html,
+        confidence_html, four section visibility updates, metadata bar HTML,
+        processing_section visibility update)
     """
     if file_path is None:
         raise gr.Error("Por favor, sube una imagen del manuscrito primero.")
@@ -703,7 +707,7 @@ def toggle_view(view: str, raw: str, cleaned: str) -> str:
     Pure function; no side effects; no pipeline re-run (D-08, UI-05).
 
     Args:
-        view: Selected radio value ("Raw" or "Cleaned").
+        view: Selected radio value ("Original" or "Limpiada").
         raw: Raw transcription text from raw_state.
         cleaned: Cleaned transcription text from cleaned_state.
 
@@ -735,7 +739,22 @@ def show_processing() -> gr.update:
     return gr.update(visible=True)
 
 
-with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") as demo:
+def hide_processing() -> gr.update:
+    """Hide the processing state card unconditionally after transcribe_manuscript.
+
+    Runs as the final .then() step in the submit chain. Unlike .success(),
+    .then() fires regardless of whether the preceding event succeeded or
+    raised gr.Error — so the spinner is cleared even on intake/pipeline
+    failures. On success this is a harmless second hide (transcribe_manuscript
+    already returns processing_section hidden at index 10).
+    """
+    return gr.update(visible=False)
+
+
+# Gradio 6: css moved from the gr.Blocks constructor to launch() —
+# passed as css=CUSTOM_CSS in demo.launch() below (title remains a
+# valid Blocks constructor parameter).
+with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
     gr.HTML("""
 <div class="pal-header">
   <div class="pal-logo-mark">P</div>
@@ -811,6 +830,12 @@ with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") 
         fn=transcribe_manuscript,
         inputs=[file_input],
         outputs=outputs_full,
+    ).then(
+        # Unconditional cleanup: .then() fires even when transcribe_manuscript
+        # raises gr.Error, so the processing card never stays stuck visible.
+        fn=hide_processing,
+        inputs=[],
+        outputs=[processing_section],
     )
 
     reset_btn.click(
@@ -844,12 +869,14 @@ with gr.Blocks(css=CUSTOM_CSS, title="Palimpsest — Manuscript Transcription") 
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    # Pass theme here in Gradio 6.x (moved from gr.Blocks constructor in 6.0)
+    # Pass theme and css here in Gradio 6.x (both moved from the gr.Blocks
+    # constructor in 6.0 — launch() accepts css/css_paths in 6.19.0).
     # server_name="0.0.0.0" required for Docker — default 127.0.0.1 is not
     # reachable outside the container even with -p 7860:7860 port mapping.
     # server_port reads PORT env var (Cloud Run / Oracle VM convention).
     demo.launch(
         theme=gr.themes.Soft(),
+        css=CUSTOM_CSS,
         server_name="0.0.0.0",
         server_port=int(os.environ.get("PORT", 7860)),
     )

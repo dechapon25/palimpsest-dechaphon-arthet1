@@ -2,7 +2,7 @@
 
 **Kaggle AI Agents Capstone — Freestyle Track**
 **GitHub:** https://github.com/carlosapsa/palimpsest
-**Live Demo:** http://palimpsest.cpaz.es:7860/
+**Live Demo:** https://palimpsest.cpaz.es
 
 ---
 
@@ -14,7 +14,7 @@ This is not a niche problem. Spain's Portal de Archivos Españoles (PARES) holds
 
 The standard solutions are slow and expensive. Hiring a professional paleographer costs time and money that most researchers do not have. Crowdsourced transcription platforms like Transkribus work but require manual correction passes and domain expertise to train the models. Even when AI is applied, a single-prompt approach hits the same wall: one model trying to transcribe, normalize, contextualize, and score confidence all at once produces inconsistent results.
 
-Palimpsest takes a different approach. A researcher uploads a scan of a colonial document. Within seconds, they receive a readable, enriched transcription — abbreviations expanded, archaic spelling normalized, named entities linked to Wikidata, and uncertain passages highlighted in orange so the researcher knows exactly where to focus their review. One pipeline. No paleography expertise required.
+Palimpsest takes a different approach. A researcher uploads a scan of a colonial document. In under a minute, they receive a readable, enriched transcription — abbreviations expanded, archaic spelling normalized, named entities linked to Wikidata, and uncertain passages highlighted in amber so the researcher knows exactly where to focus their review. One pipeline. No paleography expertise required.
 
 ---
 
@@ -36,11 +36,11 @@ Separation from transcription matters here too: the cleaning agent receives the 
 
 ### ContextAgent: MCP for Open Knowledge
 
-The third agent identifies named entities in the cleaned text — persons, places, dates, institutions — and enriches them with historical context. Rather than relying on the LLM's training data, it calls four tools exposed by a **FastMCP server** (the second course concept). The tools query Wikidata SPARQL and the Wikipedia REST API. No API key required. The results appear in the Gradio UI as a historical notes table: entity name, type, Wikidata ID, description, and a source URL the researcher can click.
+The third agent identifies named entities in the cleaned text — persons, places, dates, institutions — and enriches them with historical context. Rather than relying on the LLM's training data, it calls four tools exposed by a **FastMCP server** (the second course concept). The tools query Wikidata SPARQL and the Wikipedia REST API. No API key required. The results appear in the Gradio UI as historical notes cards: entity name, a colored type badge, and a description.
 
 ### VerificationAgent: Last in Pipeline
 
-The fourth agent scores every word and span in the cleaned transcription with a confidence value from 0.0 to 1.0. Words that ended in `[?]` from the cleaning agent, archaic forms not in the normalization dictionary, rare proper nouns, and `[illegible]` markers all receive lower scores. The Gradio UI displays these as orange highlights — a visual cue that tells the researcher "these are the words worth double-checking."
+The fourth agent scores every word and span in the cleaned transcription with a confidence value from 0.0 to 1.0. Words that ended in `[?]` from the cleaning agent, archaic forms not in the normalization dictionary, rare proper nouns, and `[illegible]` markers all receive lower scores. The Gradio UI displays these as amber highlights — a visual cue that tells the researcher "these are the words worth double-checking."
 
 The pipeline order matters: Verification runs last because it needs the full cleaned and enriched text, not the raw output. Running it earlier would score raw abbreviations as uncertain, flooding the highlights with false positives.
 
@@ -83,7 +83,7 @@ Scanned manuscript image
          ▼
 ┌─────────────────┐
 │ Gradio UI        │  raw_transcription · cleaned_transcription
-│ Output           │  context_notes (entity table) · confidence_map (highlights)
+│ Output           │  context_notes (notes cards) · confidence_map (highlights)
 └─────────────────┘
 ```
 
@@ -132,11 +132,11 @@ The **security features** (SEC-01 through SEC-04) address a real attack surface 
 
 ## 5. Results and Live Demo
 
-**Live demo:** http://palimpsest.cpaz.es:7860/ (deployed on Oracle Cloud VM, docker run --restart=always)
+**Live demo:** https://palimpsest.cpaz.es (deployed on Oracle Cloud VM, docker run --restart=always)
 
 **GitHub:** https://github.com/carlosapsa/palimpsest
 
-The Gradio UI exposes all four pipeline outputs in separate tabs: the raw transcription from Gemini Pro, the cleaned transcription with abbreviations expanded, the historical notes table (entity rows with Wikidata links), and the confidence highlights (orange words below the 0.7 threshold).
+The Gradio UI presents all pipeline outputs on a single parchment-styled page: a results grid pairing the transcription panel (with a Limpiada/Original toggle and a copy button) with the confidence map panel, where words below the 0.95 confidence threshold receive amber highlights; historical notes rendered as entity cards in a grid below; and a metadata bar with Tiempo, Modelo, Palabras, Inciertas (words under the 0.7 threshold), and Confianza pills.
 
 To test the system, visit the demo URL, click "Upload manuscript image," and select any scanned page of 18th or 19th-century Spanish handwriting. The pipeline completes in approximately 20–40 seconds depending on document length. The confidence highlight panel gives an immediate visual indication of which words the system is uncertain about — the researcher can then focus their review precisely.
 
@@ -158,4 +158,4 @@ Four design decisions defined the project:
 
 The most counterintuitive finding: `thinkingBudget=128` (low) outperforms higher budgets for transcription. Higher budgets cause the model to over-analyze ambiguous cursive strokes. For transcription, reading quickly and literally is better than reasoning deeply.
 
-<!-- Word count: ~1950 words -->
+<!-- Word count: ~2000 words -->

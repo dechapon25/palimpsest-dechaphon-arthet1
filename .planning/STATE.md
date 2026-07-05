@@ -5,8 +5,8 @@ milestone_name: milestone
 current_phase: 06
 current_phase_name: ui-redesign-claude-design
 status: executing
-stopped_at: context exhaustion at 76% (2026-06-28)
-last_updated: "2026-07-03T00:12:13.514Z"
+stopped_at: context exhaustion at 100% (2026-07-05)
+last_updated: "2026-07-05T07:57:49.342Z"
 last_activity: 2026-07-03
 last_activity_desc: Phase 06 execution started
 progress:
@@ -97,7 +97,7 @@ Recent decisions affecting current work:
 - [Phase ?]: 03-01: pipeline order
 - [Phase ?]: gradio==6.19.0 used instead of planned 5.50.0 — Pillow 12.x compatibility (Rule 3 auto-fix)
 - [Phase ?]: 03-02: theme=gr.themes.Soft() passed to demo.launch() per Gradio 6.x API
-- [Phase ?]: 04-02: IP-based URL http://144.21.40.193:7860/ confirmed for Kaggle submission
+- [Phase ?]: 04-02: Public URL https://palimpsest.cpaz.es confirmed for Kaggle submission
 - [Phase ?]: 04-02: Oracle dual-firewall: OS firewalld AND OCI Console security list BOTH required (RESEARCH.md Pitfall 3)
 - [Phase ?]: 04-02: FastMCP stdio subprocess working on Oracle VM — PYTHONUNBUFFERED=1 from Dockerfile sufficient
 
@@ -126,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-07-03T00:12:13.509Z
-Stopped at: Phase 05 complete — milestone v1.0 all phases done, pending README + Kaggle writeup + video
+Last session: 2026-07-05T07:57:49.336Z
+Stopped at: context exhaustion at 100% (2026-07-05)
 Resume file: None

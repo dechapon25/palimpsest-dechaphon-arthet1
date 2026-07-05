@@ -53,40 +53,42 @@ Narra:
 
 ▎ "Let me show it live. I'll upload the Columbus document."
 
-Sube data/samples/colon_1498_15c.jpg. Mientras procesa (~30s, se ve la tarjeta
-de progreso con los 4 pasos):
+Sube data/samples/colon_1498_15c.jpg. Aparece el botón "Transcribe manuscript"
+activo; púlsalo. Mientras procesa (~30s, se ve la tarjeta de progreso con los
+4 pasos: Image restoration · Paleographic transcription · Historical analysis ·
+Confidence map):
 
-▎ "The pipeline is running — you can see the four stages: image intake,
+▎ "The pipeline is running — you can see the four stages: image restoration,
 ▎ paleographic transcription, historical analysis, and the confidence map —
 ▎ all in sequence."
 
 Cuando termine, recorre la página de resultados (una sola página, sin pestañas):
 
-Tarjeta Transcripción — toggle en "Original":
+Tarjeta "Transcription" — toggle en "Original":
 
 ▎ "This is what Gemini Pro vision reads directly from the handwriting. Notice
 ▎ the abbreviations: Almirante is written 'Almir.te', 'S.M.' for Su Majestad,
 ▎ 'dho' for dicho, 'I.dias' for Indias."
 
-Cambia el toggle a "Limpiada":
+Cambia el toggle a "Cleaned":
 
 ▎ "The Cleaning Agent expanded every abbreviation. 'Almir.te' becomes
 ▎ Almirante, 'S.M.' becomes Su Majestad, 'Pleyto' is normalized to Pleito.
 ▎ Archaic spelling corrected, line structure preserved."
 
-Tarjeta Mapa de Confianza:
+Tarjeta "Confidence Map":
 
 ▎ "Amber highlights mark words below the 0.95 confidence threshold — hover
 ▎ shows the score and the reason. The researcher sees exactly where to focus
 ▎ their review."
 
-Tarjetas de Notas Históricas (abajo):
+Tarjetas "Historical Notes" (abajo):
 
 ▎ "The Context Agent called the MCP server — Wikidata resolved Christopher
 ▎ Columbus, the Catholic Monarchs, and the places in this document. Each card
 ▎ shows the entity type and a short historical description."
 
-Barra de metadatos:
+Barra de metadatos (Time · Model · Words · Uncertain · Confidence):
 
 ▎ "And the metadata bar summarizes the run: processing time, model, word
 ▎ count, uncertain words, and overall confidence."

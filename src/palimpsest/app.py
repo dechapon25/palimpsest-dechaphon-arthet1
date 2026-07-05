@@ -48,30 +48,38 @@ load_dotenv()
 CONFIDENCE_THRESHOLD = 0.7
 HIGHLIGHT_THRESHOLD = 0.95  # Design spec: score >= 0.95 → plain; score < 0.95 → amber highlight
 
-PROCESSING_HTML = """
-<div class="pal-card pal-processing-card">
-  <div class="pal-card-title">Transcribiendo…</div>
-  <div class="pal-progress-bar-wrap"><div class="pal-progress-bar"></div></div>
-  <ul class="pal-steps">
-    <li class="step-active">
-      <span class="step-icon"><span class="step-icon-spin">⟳</span></span>
-      Restauración de la imagen
-    </li>
-    <li>
-      <span class="step-icon">·</span>
-      Transcripción paleográfica
-    </li>
-    <li>
-      <span class="step-icon">·</span>
-      Análisis histórico
-    </li>
-    <li>
-      <span class="step-icon">·</span>
-      Mapa de confianza
-    </li>
-  </ul>
-</div>
-"""
+# Step timing approximates the ~30s pipeline: spin start / done at (0,8) (8,18)
+# (18,26) (26,—) seconds via CSS animation-delay. Pure CSS — no Python generator.
+def _proc_step(label: str, spin_at: int, done_at: int | None) -> str:
+    done_span = (
+        f'<span class="ic-done" style="animation-delay:{done_at}s"></span>'
+        if done_at is not None
+        else ""
+    )
+    return (
+        f'<li><span class="step-icon">'
+        f'<span class="ic-pending"></span>'
+        f'<span class="ic-spin" style="animation-delay:{spin_at}s"></span>'
+        f"{done_span}"
+        f"</span>"
+        f'<span class="step-label" style="animation-delay:{spin_at}s">{label}</span></li>'
+    )
+
+
+PROCESSING_HTML = (
+    '<div class="pal-card pal-processing-card">'
+    '<div class="pal-proc-head">'
+    '<div class="pal-card-title" style="margin:0">Transcribiendo…</div>'
+    '<div class="eta">~30 s</div>'
+    "</div>"
+    '<div class="pal-progress-bar-wrap"><div class="pal-progress-bar"></div></div>'
+    '<ul class="pal-steps">'
+    + _proc_step("Restauración de la imagen", 0, 8)
+    + _proc_step("Transcripción paleográfica", 8, 18)
+    + _proc_step("Análisis histórico", 18, 26)
+    + _proc_step("Mapa de confianza", 26, None)
+    + "</ul></div>"
+)
 
 CUSTOM_CSS = """
 /* Palimpsest — Parchment Theme (Claude Design handoff) */
@@ -101,22 +109,30 @@ CUSTOM_CSS = """
 /* ── Base ───────────────────────────────────────────────────── */
 body, html {
     background-color: #F1EADA !important;
+    background-image:
+        radial-gradient(1100px 620px at 50% -8%, rgba(255,255,255,0.55), transparent 62%),
+        radial-gradient(820px 520px at 102% 104%, rgba(174,59,44,0.05), transparent 58%);
+    background-attachment: fixed;
     font-family: var(--font-sans);
     overflow-x: hidden;
 }
 
-/* Background watermark — fixed italic Spectral text, barely visible */
+/* Background watermark — justified faux-manuscript block, barely visible */
 body::before {
-    content: "Palimpsesto · manuscrito · historia · transcripción paleográfica";
+    content: "In nomine Dei omnipotentis notum sit cunctis presentem cartam videntibus quod ego concedo et cognosco quod vendo vobis domos quas habeo per hereditatem patris mei anno Domini millesimo quingentesimo · sepan cuantos esta carta vieren cómo yo otorgo y conozco que vendo unas casas que tengo por herencia de mi padre que santa gloria haya · In nomine Dei omnipotentis notum sit cunctis presentem cartam videntibus quod ego concedo et cognosco quod vendo vobis domos quas habeo per hereditatem · sepan cuantos esta carta vieren cómo yo otorgo y conozco";
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-1deg);
+    top: 90px;
+    left: -3%;
+    right: -3%;
+    bottom: 0;
+    overflow: hidden;
     font-family: 'Spectral', Georgia, serif;
     font-style: italic;
     font-size: 40px;
+    line-height: 2.5;
     color: rgba(35,25,15,0.038);
-    white-space: nowrap;
+    text-align: justify;
+    transform: rotate(-1deg);
     pointer-events: none;
     z-index: 0;
     user-select: none;
@@ -140,53 +156,121 @@ body::before {
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
+.pal-header-row {
+    align-items: flex-end !important;
+    border-bottom: 1px solid rgba(35,25,15,0.13);
+    padding: 28px 2px 18px !important;
+    margin-bottom: 36px;
+    gap: 24px !important;
+}
+.pal-header-row > .form { display: contents; }
+
 .pal-header {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 32px;
+    gap: 15px;
 }
 
 .pal-logo-mark {
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
     background: #23190F;
-    border-radius: 10px;
-    box-shadow: 0 4px 0 #AE3B2C;
+    border-radius: 11px;
+    box-shadow: inset 0 -3px 0 #AE3B2C;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Spectral', Georgia, serif;
-    font-size: 22px;
+    font-size: 26px;
     font-weight: 700;
-    color: #FBF8F0;
+    color: #F1EADA;
     line-height: 1;
 }
 
 .pal-header-title {
     font-family: 'Spectral', Georgia, serif;
-    font-size: 28px;
+    font-size: 27px;
     font-weight: 600;
+    letter-spacing: -0.01em;
     color: #23190F;
-    line-height: 1.2;
+    line-height: 1;
     margin: 0;
 }
 
 .pal-header-sub {
-    font-size: 14px;
-    color: #6E6353;
+    font-size: 12.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8A7E6B;
+    font-weight: 600;
     font-family: 'Hanken Grotesk', system-ui, sans-serif;
-    margin: 3px 0 0 0;
+    margin: 7px 0 0 0;
+}
+
+.pal-adk-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 12px;
+    color: #6E6353;
+    border: 1px solid rgba(35,25,15,0.13);
+    border-radius: 999px;
+    padding: 7px 13px;
+    background: rgba(251,248,240,0.7);
+    white-space: nowrap;
+}
+.pal-adk-badge .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2F6E5A;
+    display: inline-block;
+}
+
+/* Reset button inside header (design: ghost w/ border, radius 9px) */
+.pal-header-row .btn-ghost {
+    border-radius: 9px !important;
+    padding: 9px 15px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    width: auto !important;
+    align-self: flex-end;
+}
+
+/* ── Hero (initial state) ───────────────────────────────────── */
+.pal-hero h1 {
+    font-family: 'Spectral', Georgia, serif;
+    font-weight: 600;
+    font-size: 38px;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin: 34px 0 12px;
+    text-align: center;
+    color: #23190F;
+}
+.pal-hero p {
+    text-align: center;
+    color: #6E6353;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0 auto 32px;
+    max-width: 480px;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+}
+.pal-initial-col {
+    max-width: 680px;
+    margin: 0 auto;
 }
 
 /* ── Upload zone ────────────────────────────────────────────── */
 .pal-upload-zone {
-    border: 2px dashed rgba(174,59,44,0.40);
+    border: 1.5px dashed rgba(174,59,44,0.40);
     border-radius: 16px;
-    padding: 32px;
+    padding: 18px;
     text-align: center;
-    background: #FBF8F0;
+    background: rgba(174,59,44,0.025);
     margin-bottom: 16px;
 }
 
@@ -270,28 +354,31 @@ body::before {
 /* ── Segment toggle — gr.Radio styled as pill switcher ──────── */
 .pal-seg-toggle .wrap {
     display: inline-flex !important;
-    border: 1px solid rgba(35,25,15,0.12) !important;
-    border-radius: 8px !important;
+    border: none !important;
+    border-radius: 10px !important;
     overflow: hidden !important;
     gap: 0 !important;
-    padding: 0 !important;
-    background: transparent !important;
+    padding: 3px !important;
+    background: rgba(35,25,15,0.06) !important;
 }
 .pal-seg-toggle input[type="radio"] { display: none !important; }
 .pal-seg-toggle label {
-    padding: 6px 16px !important;
+    padding: 6px 14px !important;
     font-size: 13px !important;
+    font-weight: 600 !important;
     font-family: 'Hanken Grotesk', system-ui, sans-serif !important;
     cursor: pointer !important;
-    color: #6E6353 !important;
+    color: #8A7E6B !important;
     background: transparent !important;
     border: none !important;
+    border-radius: 7px !important;
     margin: 0 !important;
     transition: background 0.15s, color 0.15s;
 }
 .pal-seg-toggle input[type="radio"]:checked + label {
-    background: #AE3B2C !important;
-    color: #FBF8F0 !important;
+    background: #FBF8F0 !important;
+    color: #AE3B2C !important;
+    box-shadow: 0 2px 5px -2px rgba(35,25,15,0.35);
 }
 
 /* ── Buttons ────────────────────────────────────────────────── */
@@ -299,9 +386,11 @@ body::before {
     background-color: #AE3B2C !important;
     color: #FBF8F0 !important;
     font-weight: 600 !important;
-    border-radius: 8px !important;
+    font-size: 16px !important;
+    border-radius: 11px !important;
+    padding: 15px !important;
     font-family: 'Hanken Grotesk', system-ui, sans-serif !important;
-    box-shadow: 0 2px 8px rgba(174,59,44,0.35) !important;
+    box-shadow: 0 14px 26px -12px rgba(174,59,44,0.8) !important;
     border: none !important;
     width: 100%;
 }
@@ -316,27 +405,54 @@ body::before {
 }
 .btn-ghost:hover { background: rgba(35,25,15,0.05) !important; }
 
-/* ── Metadata bar ───────────────────────────────────────────── */
+/* ── Results top bar — file status + metadata boxes ─────────── */
 .pal-meta-bar {
     display: flex;
-    gap: 8px;
     flex-wrap: wrap;
     align-items: center;
-    margin-bottom: 16px;
+    gap: 14px 22px;
+    margin-bottom: 24px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid rgba(35,25,15,0.1);
 }
-.pal-meta-pill {
+.pal-meta-file { display: flex; align-items: center; gap: 12px; }
+.pal-meta-file .fname { font-weight: 600; font-size: 14px; color: #23190F; }
+.pal-meta-file .fdone {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid rgba(35,25,15,0.12);
-    background: #FBF8F0;
-    font-size: 12px;
-    font-family: 'IBM Plex Mono', 'Courier New', monospace;
-    color: #6E6353;
+    gap: 6px;
+    font-size: 12.5px;
+    color: #2F6E5A;
+    font-weight: 600;
+    margin-top: 3px;
 }
-.pal-meta-pill strong { color: #23190F; font-weight: 500; }
+.pal-meta-spacer { flex: 1; }
+.pal-meta-boxes { display: flex; flex-wrap: wrap; gap: 9px; }
+.pal-meta-box {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 14px;
+    border: 1px solid rgba(35,25,15,0.12);
+    border-radius: 10px;
+    background: rgba(251,248,240,0.6);
+    min-width: 74px;
+}
+.pal-meta-box .mlabel {
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #A99C86;
+    font-weight: 600;
+}
+.pal-meta-box .mvalue {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 15px;
+    font-weight: 500;
+    color: #23190F;
+}
+.pal-meta-box .mvalue.warn { color: #AE3B2C; }
+.pal-meta-box .mvalue.good { color: #2F6E5A; }
 
 /* ── Status / completion text ───────────────────────────────── */
 .pal-status {
@@ -346,14 +462,50 @@ body::before {
     min-height: 20px;
 }
 
+/* ── Section headers with accent bar ────────────────────────── */
+.pal-sec-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+    margin: 0 0 14px 0;
+}
+.pal-sec-head .bar {
+    width: 6px;
+    height: 18px;
+    border-radius: 2px;
+    display: inline-block;
+    flex: none;
+}
+.pal-sec-head h2 {
+    font-family: 'Spectral', Georgia, serif;
+    font-size: 19px;
+    font-weight: 600;
+    margin: 0;
+    color: #23190F;
+}
+.pal-sec-head .count {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 12px;
+    color: #8A7E6B;
+}
+
 /* ── Transcription text modes ───────────────────────────────── */
 .pal-transcription-card textarea {
     font-family: 'Spectral', Georgia, serif !important;
     font-size: 18px !important;
     line-height: 1.95 !important;
-    color: #23190F !important;
+    color: #2A2014 !important;
     background: transparent !important;
     border: none !important;
+}
+/* Raw (Original) view — monospace diplomatic transcription */
+.pal-transcription-card.pal-raw-mode textarea {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace !important;
+    font-size: 13.5px !important;
+    color: #6E6353 !important;
+    white-space: pre-wrap !important;
 }
 
 /* ── Gradio generating pulse ────────────────────────────────── */
@@ -387,34 +539,99 @@ body::before {
     width: 0%;
 }
 @keyframes pal-progress { from { width: 0% } to { width: 88% } }
+.pal-proc-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+.pal-proc-head .eta {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 13px;
+    color: #AE3B2C;
+    font-weight: 500;
+}
 .pal-steps {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 2px;
 }
 .pal-steps li {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 14px;
+    gap: 14px;
+    padding: 9px 0;
+    font-size: 15px;
+    font-weight: 500;
     font-family: 'Hanken Grotesk', system-ui, sans-serif;
-    color: #8A7E6B;
+    color: #A99C86;
 }
-.pal-steps .step-active { color: #23190F; font-weight: 500; }
-.pal-steps .step-done   { color: #2F6E5A; }
+/* Step label darkens when its stage starts (delay set inline per step) */
+.pal-steps li .step-label {
+    animation: pal-step-on 0.3s forwards;
+    animation-delay: inherit;
+}
+@keyframes pal-step-on { to { color: #23190F; } }
+
+/* 3-state icon stack: pending dot → spinner → done check.
+   Later layers appear over earlier ones via animation-delay (inline). */
 .step-icon {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
+.step-icon > span {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ic-pending::before {
+    content: "";
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 2px solid rgba(35,25,15,0.18);
+}
+.ic-spin {
+    opacity: 0;
+    animation: pal-appear 0.2s forwards;
+    animation-delay: inherit;
+}
+.ic-spin::before {
+    content: "";
     width: 20px;
     height: 20px;
-    display: inline-flex;
+    border-radius: 50%;
+    border: 2.5px solid rgba(35,25,15,0.15);
+    border-top-color: #AE3B2C;
+    animation: pal-spin 0.7s linear infinite;
+    background: #FBF8F0;
+}
+.ic-done {
+    opacity: 0;
+    animation: pal-appear 0.2s forwards;
+    animation-delay: inherit;
+}
+.ic-done::before {
+    content: "✓";
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #2F6E5A;
+    color: #FBF8F0;
+    display: flex;
     align-items: center;
     justify-content: center;
     font-size: 13px;
-    flex-shrink: 0;
+    font-weight: 700;
 }
-.step-icon-spin { animation: pal-spin 1s linear infinite; display: inline-block; }
+@keyframes pal-appear { to { opacity: 1; } }
 @keyframes pal-spin { to { transform: rotate(360deg); } }
 """
 
@@ -459,14 +676,14 @@ def render_confidence_html(word_scores: list[dict]) -> str:
             score = 1.0  # treat unparseable score as fully confident
 
         if score < HIGHLIGHT_THRESHOLD:
-            # Alpha formula from design spec: min(0.62, (1-score)*1.05) + 0.05
-            alpha = round(min(0.62, (1 - score) * 1.05) + 0.05, 3)
+            # Alpha formula from design spec: min(0.62, (1-score)*1.05*0.85) + 0.05
+            alpha = round(min(0.62, (1 - score) * 1.05 * 0.85) + 0.05, 3)
             span = (
                 f'<span style="'
                 f"background-color: rgba(217,149,46,{alpha}); "
                 f"box-shadow: inset 0 -2px 0 rgba(174,59,44,0.42); "
-                f"padding: 0 2px; "
-                f"border-radius: 2px; "
+                f"padding: 1px 3px; "
+                f"border-radius: 4px; "
                 f'cursor: help;" '
                 f'title="score: {score:.2f} | {escaped_reason}">'
                 f"{escaped_word}</span>"
@@ -476,7 +693,28 @@ def render_confidence_html(word_scores: list[dict]) -> str:
             parts.append(escaped_word)
 
     body = " ".join(parts)
-    return f'<div style="font-size:16px;line-height:1.8;font-family:\'Spectral\',Georgia,serif;color:#23190F">{body}</div>'
+    hint = (
+        '<div style="min-height:20px;font-size:13px;font-weight:500;color:#8A7E6B;'
+        "font-family:'Hanken Grotesk',system-ui,sans-serif;margin-bottom:12px\">"
+        "Pasa el cursor sobre una palabra resaltada para ver su confianza."
+        "</div>"
+    )
+    legend = (
+        '<div style="display:flex;align-items:center;gap:10px;font-size:11.5px;'
+        "color:#8A7E6B;font-weight:600;font-family:'Hanken Grotesk',system-ui,sans-serif;"
+        'margin-top:16px;padding-top:14px;border-top:1px solid rgba(35,25,15,0.09)">'
+        "<span>Cierto</span>"
+        '<div style="flex:1;height:8px;border-radius:99px;'
+        "background:linear-gradient(90deg, rgba(217,149,46,0.04), rgba(217,149,46,0.85));"
+        'box-shadow:inset 0 -2px 0 rgba(174,59,44,0.3)"></div>'
+        "<span>Incierto</span></div>"
+    )
+    return (
+        f"{hint}"
+        f'<div style="font-size:16px;line-height:2.05;max-height:300px;overflow:auto;'
+        f"font-family:'Spectral',Georgia,serif;color:#3A2E20\">{body}</div>"
+        f"{legend}"
+    )
 
 
 _TYPE_COLORS: dict[str, str] = {
@@ -500,9 +738,18 @@ def render_context_cards(context_notes: list[dict]) -> str:
     Returns:
         HTML string with the notes grid, or a no-entities message.
     """
+    header_tpl = (
+        '<div class="pal-sec-head">'
+        '<span class="bar" style="background:#4A5A86"></span>'
+        "<h2>Notas históricas</h2>"
+        '<span class="count">{count} entidades</span>'
+        "</div>"
+    )
+
     if not context_notes:
         return (
-            "<p style='color:#6E6353;font-family:Hanken Grotesk,system-ui,sans-serif;"
+            header_tpl.format(count=0)
+            + "<p style='color:#6E6353;font-family:Hanken Grotesk,system-ui,sans-serif;"
             "font-size:14px;margin:0'>No se encontraron entidades históricas.</p>"
         )
 
@@ -515,41 +762,49 @@ def render_context_cards(context_notes: list[dict]) -> str:
         description = html.escape(str(note.get("description", "")))
         color = _TYPE_COLORS.get(entity_type, "#4A5A86")
         # Inline alpha on border/bg to avoid CSS custom property injection risk
-        bg_color = f"{color}22"
-        border_color = f"{color}55"
+        bg_color = f"{color}1f"
+        border_color = f"{color}40"
         cards.append(
-            f'<div class="pal-card pal-note-card">'
+            f'<div class="pal-note-card" style="border:1px solid rgba(35,25,15,0.11);'
+            f'border-radius:12px;background:rgba(247,242,231,0.5)">'
             f'<div class="pal-note-header">'
-            f'<span class="pal-note-entity">{entity}</span>'
+            f'<span class="pal-note-entity" style="font-size:16.5px;line-height:1.2">{entity}</span>'
             f'<span class="pal-note-type" style="background:{bg_color};color:{color};'
-            f'border:1px solid {border_color}">{entity_type}</span>'
+            f"border:1px solid {border_color};font-family:'IBM Plex Mono',monospace;"
+            f"font-size:10.5px;font-weight:500;letter-spacing:0.04em;"
+            f'text-transform:uppercase;padding:3px 8px;border-radius:6px">{entity_type}</span>'
             f"</div>"
-            f'<p class="pal-note-desc">{description}</p>'
+            f'<p class="pal-note-desc" style="font-size:13.5px">{description}</p>'
             f"</div>"
         )
 
     inner = "".join(cards)
-    return f'<div class="pal-notes-grid">{inner}</div>'
+    return (
+        header_tpl.format(count=len(cards))
+        + f'<div class="pal-notes-grid">{inner}</div>'
+    )
 
 
 def render_metadata_bar(
     confidence_list: list[dict],
     cleaned_text: str,
     elapsed: float,
+    filename: str = "",
 ) -> str:
-    """Render the 5-pill metadata bar shown after successful transcription.
+    """Render the results top bar: file status + 5 metadata boxes.
 
-    Pills: Tiempo · Modelo · Palabras · Inciertas · Confianza.
-    Uses CONFIDENCE_THRESHOLD (0.7) to count uncertain words for the
-    'Inciertas' pill; average score is displayed as Confianza %.
+    Boxes: Tiempo · Modelo · Palabras · Inciertas · Confianza — uppercase
+    label over IBM Plex Mono value (design spec). Uses CONFIDENCE_THRESHOLD
+    (0.7) to count uncertain words; average score shown as Confianza %.
 
     Args:
         confidence_list: Word-score dicts from confidence_map.
         cleaned_text: Cleaned transcription text (for word count).
         elapsed: Pipeline wall-clock seconds.
+        filename: Uploaded file name for the status row (html-escaped).
 
     Returns:
-        HTML string with div.pal-meta-bar containing span.pal-meta-pill elements.
+        HTML string with div.pal-meta-bar (file row + div.pal-meta-boxes).
     """
     model_label = os.environ.get("GEMINI_MODEL", "gemini-2.5-pro")
 
@@ -572,20 +827,31 @@ def render_metadata_bar(
         valid_count += 1
 
     avg_conf = (total_score / valid_count * 100) if valid_count else 100.0
-    elapsed_str = f"{elapsed:.0f}s" if elapsed < 60 else f"{elapsed / 60:.1f} min"
+    elapsed_str = f"{elapsed:.0f} s" if elapsed < 60 else f"{elapsed / 60:.1f} min"
 
-    pills = [
-        ("Tiempo", elapsed_str),
-        ("Modelo", model_label),
-        ("Palabras", str(word_count)),
-        ("Inciertas", str(uncertain_count)),
-        ("Confianza", f"{avg_conf:.0f}%"),
+    boxes = [
+        ("Tiempo", elapsed_str, ""),
+        ("Modelo", html.escape(model_label), ""),
+        ("Palabras", str(word_count), ""),
+        ("Inciertas", str(uncertain_count), " warn"),
+        ("Confianza", f"{avg_conf:.0f}%", " good"),
     ]
-    pills_html = "".join(
-        f'<span class="pal-meta-pill"><strong>{label}</strong>&nbsp;{value}</span>'
-        for label, value in pills
+    boxes_html = "".join(
+        f'<div class="pal-meta-box"><div class="mlabel">{label}</div>'
+        f'<div class="mvalue{cls}">{value}</div></div>'
+        for label, value, cls in boxes
     )
-    return f'<div class="pal-meta-bar">{pills_html}</div>'
+    file_html = (
+        '<div class="pal-meta-file"><div>'
+        f'<div class="fname">{html.escape(filename)}</div>'
+        '<div class="fdone">✓ Procesamiento completado</div>'
+        "</div></div>"
+    )
+    return (
+        f'<div class="pal-meta-bar">{file_html}'
+        f'<div class="pal-meta-spacer"></div>'
+        f'<div class="pal-meta-boxes">{boxes_html}</div></div>'
+    )
 
 
 async def transcribe_manuscript(file_path: str) -> tuple:
@@ -594,10 +860,10 @@ async def transcribe_manuscript(file_path: str) -> tuple:
     Accepts a plain str file path from gr.File(type="filepath") in Gradio 5+/6+.
     Does NOT use a .name attribute — file_path is already a str (RESEARCH.md Pitfall 4).
 
-    Returns an 11-tuple mapped to Gradio outputs (outputs_full):
+    Returns a 12-tuple mapped to Gradio outputs (outputs_full):
         (transcription_box, raw_state, cleaned_state, notes_md, confidence_html,
          transcription_section, confidence_section, notes_section, reset_btn,
-         status_md, processing_section)
+         status_md, processing_section, initial_section)
 
     Error handling (D-11): raises gr.Error() for both intake failures and pipeline
     errors. Gradio displays these as a red pop-up banner — no broken UI state.
@@ -606,9 +872,7 @@ async def transcribe_manuscript(file_path: str) -> tuple:
         file_path: Path string returned by gr.File(type="filepath").
 
     Returns:
-        11-tuple: (cleaned_text, raw_text, cleaned_text, notes_cards_html,
-        confidence_html, four section visibility updates, metadata bar HTML,
-        processing_section visibility update)
+        12-tuple matching outputs_full (see component index comments below).
     """
     if file_path is None:
         raise gr.Error("Por favor, sube una imagen del manuscrito primero.")
@@ -695,9 +959,10 @@ async def transcribe_manuscript(file_path: str) -> tuple:
         gr.update(visible=True),                    # 7 notes_section
         gr.update(visible=True),                    # 8 reset_btn
         render_metadata_bar(                        # 9 status_md (gr.HTML)
-            confidence_list, cleaned_text, elapsed
+            confidence_list, cleaned_text, elapsed, filename
         ),
         gr.update(visible=False),                   # 10 processing_section
+        gr.update(visible=False),                   # 11 initial_section (hero+upload)
     )
 
 
@@ -718,7 +983,7 @@ def toggle_view(view: str, raw: str, cleaned: str) -> str:
 
 
 def reset_manuscript() -> tuple:
-    """Reset all UI state and hide result panels. Returns 11-tuple matching outputs_full."""
+    """Reset all UI state and hide result panels. Returns 12-tuple matching outputs_full."""
     return (
         "",                          # transcription_box
         "",                          # raw_state
@@ -731,6 +996,7 @@ def reset_manuscript() -> tuple:
         gr.update(visible=False),    # reset_btn
         "",                          # status_md (gr.HTML)
         gr.update(visible=False),    # processing_section
+        gr.update(visible=True),     # initial_section (hero+upload back)
     )
 
 
@@ -755,27 +1021,43 @@ def hide_processing() -> gr.update:
 # passed as css=CUSTOM_CSS in demo.launch() below (title remains a
 # valid Blocks constructor parameter).
 with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
-    gr.HTML("""
+    with gr.Row(elem_classes=["pal-header-row"]):
+        gr.HTML("""
 <div class="pal-header">
   <div class="pal-logo-mark">P</div>
   <div>
     <div class="pal-header-title">Palimpsest</div>
-    <div class="pal-header-sub">Transcripción paleográfica de manuscritos históricos</div>
+    <div class="pal-header-sub">Transcripción de manuscritos</div>
   </div>
 </div>
 """)
+        gr.HTML(
+            '<div style="display:flex;justify-content:flex-end;align-items:flex-end;height:100%">'
+            '<span class="pal-adk-badge"><span class="dot"></span>ADK · 4 agentes</span></div>'
+        )
+        reset_btn = gr.Button(
+            "Nueva transcripción", visible=False, elem_classes=["btn-ghost"], scale=0
+        )
 
     raw_state = gr.State(value="")
     cleaned_state = gr.State(value="")
 
-    with gr.Column(elem_classes=["pal-upload-zone"]):
-        file_input = gr.File(
-            label="Subir imagen de manuscrito",
-            file_types=[".jpg", ".jpeg", ".png"],
-            file_count="single",
-            type="filepath",
-        )
-        submit_btn = gr.Button("Transcribir", variant="primary", elem_classes=["btn-primary"])
+    with gr.Column(elem_classes=["pal-initial-col"]) as initial_section:
+        gr.HTML("""
+<div class="pal-hero">
+  <h1>Sube un manuscrito para transcribir</h1>
+  <p>Restauramos la imagen, transcribimos la escritura, anotamos el contexto
+  histórico y medimos la confianza de cada palabra.</p>
+</div>
+""")
+        with gr.Column(elem_classes=["pal-upload-zone"]):
+            file_input = gr.File(
+                label="Subir imagen de manuscrito",
+                file_types=[".jpg", ".jpeg", ".png"],
+                file_count="single",
+                type="filepath",
+            )
+        submit_btn = gr.Button("Transcribir manuscrito", variant="primary", elem_classes=["btn-primary"])
 
     processing_section = gr.HTML(value=PROCESSING_HTML, visible=False)
 
@@ -783,10 +1065,13 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
 
     with gr.Column(elem_classes=["pal-results-grid"]):
         with gr.Column(visible=False, elem_classes=["pal-card", "pal-transcription-card"]) as transcription_section:
-            gr.Markdown("### Transcripción")
+            gr.HTML(
+                '<div class="pal-sec-head"><span class="bar" style="background:#AE3B2C"></span>'
+                "<h2>Transcripción</h2></div>"
+            )
             view_toggle = gr.Radio(label="Vista:", choices=["Limpiada", "Original"], value="Limpiada", elem_classes=["pal-seg-toggle"])
             copy_btn = gr.Button(
-                "Copiar texto",
+                "Copiar",
                 elem_classes=["btn-ghost"],
                 scale=0,
                 size="sm",
@@ -799,14 +1084,16 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
             )
 
         with gr.Column(visible=False, elem_classes=["pal-card", "pal-confidence-card"]) as confidence_section:
-            gr.Markdown("### Mapa de Confianza")
+            gr.HTML(
+                '<div class="pal-sec-head"><span class="bar" style="background:#D9952E"></span>'
+                "<h2>Mapa de confianza</h2></div>"
+            )
             confidence_html = gr.HTML(value="")
 
         with gr.Column(visible=False, elem_classes=["pal-card", "pal-notes-card"]) as notes_section:
-            gr.HTML("<h3>Notas Históricas</h3>")
+            # Section header (accent bar + counter) is rendered inside notes_md
+            # by render_context_cards() — it needs the entity count.
             notes_md = gr.HTML(value="")
-
-    reset_btn = gr.Button("Nueva transcripción", visible=False, elem_classes=["btn-ghost"])
 
     outputs_full = [
         transcription_box,      # 0
@@ -819,7 +1106,8 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
         notes_section,          # 7
         reset_btn,              # 8
         status_md,              # 9
-        processing_section,     # 10  ← NEW
+        processing_section,     # 10
+        initial_section,        # 11  hero + upload zone (hidden in results)
     ]
 
     submit_btn.click(
@@ -848,6 +1136,15 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
         fn=toggle_view,
         inputs=[view_toggle, raw_state, cleaned_state],
         outputs=[transcription_box],
+        # Client-side: swap the card into monospace "diplomatic" styling for
+        # the Original view (design spec). js runs before fn and must return
+        # the inputs array unchanged.
+        js=(
+            "(v, r, c) => { "
+            "const card = document.querySelector('.pal-transcription-card'); "
+            "if (card) card.classList.toggle('pal-raw-mode', v === 'Original'); "
+            "return [v, r, c]; }"
+        ),
     )
 
     copy_btn.click(
@@ -858,6 +1155,11 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
             "() => { "
             "const ta = document.querySelector('.pal-transcription-card textarea'); "
             "if (ta) navigator.clipboard.writeText(ta.value || '').catch(() => {}); "
+            "const btns = document.querySelectorAll('.pal-transcription-card button'); "
+            "for (const b of btns) { "
+            "  if (b.textContent.trim() === 'Copiar' || b.textContent.trim() === 'Copiado') { "
+            "    const orig = 'Copiar'; b.textContent = 'Copiado'; "
+            "    setTimeout(() => { b.textContent = orig; }, 1500); break; } } "
             "}"
         ),
     )

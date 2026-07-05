@@ -69,15 +69,15 @@ def _proc_step(label: str, spin_at: int, done_at: int | None) -> str:
 PROCESSING_HTML = (
     '<div class="pal-card pal-processing-card">'
     '<div class="pal-proc-head">'
-    '<div class="pal-card-title" style="margin:0">Transcribiendo…</div>'
+    '<div class="pal-card-title" style="margin:0">Transcribing…</div>'
     '<div class="eta">~30 s</div>'
     "</div>"
     '<div class="pal-progress-bar-wrap"><div class="pal-progress-bar"></div></div>'
     '<ul class="pal-steps">'
-    + _proc_step("Restauración de la imagen", 0, 8)
-    + _proc_step("Transcripción paleográfica", 8, 18)
-    + _proc_step("Análisis histórico", 18, 26)
-    + _proc_step("Mapa de confianza", 26, None)
+    + _proc_step("Image restoration", 0, 8)
+    + _proc_step("Paleographic transcription", 8, 18)
+    + _proc_step("Historical analysis", 18, 26)
+    + _proc_step("Confidence map", 26, None)
     + "</ul></div>"
 )
 
@@ -655,7 +655,7 @@ def render_confidence_html(word_scores: list[dict]) -> str:
     if not word_scores:
         return (
             '<div style="font-size:14px;color:#8A7E6B;font-family:\'Hanken Grotesk\',system-ui,sans-serif">'
-            "(el mapa de confianza aparecerá tras el procesamiento)"
+            "(confidence map will appear after processing)"
             "</div>"
         )
 
@@ -696,18 +696,18 @@ def render_confidence_html(word_scores: list[dict]) -> str:
     hint = (
         '<div style="min-height:20px;font-size:13px;font-weight:500;color:#8A7E6B;'
         "font-family:'Hanken Grotesk',system-ui,sans-serif;margin-bottom:12px\">"
-        "Pasa el cursor sobre una palabra resaltada para ver su confianza."
+        "Hover over a highlighted word to see its confidence score."
         "</div>"
     )
     legend = (
         '<div style="display:flex;align-items:center;gap:10px;font-size:11.5px;'
         "color:#8A7E6B;font-weight:600;font-family:'Hanken Grotesk',system-ui,sans-serif;"
         'margin-top:16px;padding-top:14px;border-top:1px solid rgba(35,25,15,0.09)">'
-        "<span>Cierto</span>"
+        "<span>Certain</span>"
         '<div style="flex:1;height:8px;border-radius:99px;'
         "background:linear-gradient(90deg, rgba(217,149,46,0.04), rgba(217,149,46,0.85));"
         'box-shadow:inset 0 -2px 0 rgba(174,59,44,0.3)"></div>'
-        "<span>Incierto</span></div>"
+        "<span>Uncertain</span></div>"
     )
     return (
         f"{hint}"
@@ -718,10 +718,15 @@ def render_confidence_html(word_scores: list[dict]) -> str:
 
 
 _TYPE_COLORS: dict[str, str] = {
+    "Person":      "#AE3B2C",
     "Persona":     "#AE3B2C",
+    "Place":       "#2F6E5A",
     "Lugar":       "#2F6E5A",
+    "Date":        "#B07A1E",
     "Fecha":       "#B07A1E",
+    "Document":    "#4A5A86",
     "Documento":   "#4A5A86",
+    "Institution": "#4A5A86",
     "Institución": "#4A5A86",
 }
 
@@ -741,8 +746,8 @@ def render_context_cards(context_notes: list[dict]) -> str:
     header_tpl = (
         '<div class="pal-sec-head">'
         '<span class="bar" style="background:#4A5A86"></span>'
-        "<h2>Notas históricas</h2>"
-        '<span class="count">{count} entidades</span>'
+        "<h2>Historical Notes</h2>"
+        '<span class="count">{count} entities</span>'
         "</div>"
     )
 
@@ -750,7 +755,7 @@ def render_context_cards(context_notes: list[dict]) -> str:
         return (
             header_tpl.format(count=0)
             + "<p style='color:#6E6353;font-family:Hanken Grotesk,system-ui,sans-serif;"
-            "font-size:14px;margin:0'>No se encontraron entidades históricas.</p>"
+            "font-size:14px;margin:0'>No historical entities found.</p>"
         )
 
     cards: list[str] = []
@@ -830,11 +835,11 @@ def render_metadata_bar(
     elapsed_str = f"{elapsed:.0f} s" if elapsed < 60 else f"{elapsed / 60:.1f} min"
 
     boxes = [
-        ("Tiempo", elapsed_str, ""),
-        ("Modelo", html.escape(model_label), ""),
-        ("Palabras", str(word_count), ""),
-        ("Inciertas", str(uncertain_count), " warn"),
-        ("Confianza", f"{avg_conf:.0f}%", " good"),
+        ("Time", elapsed_str, ""),
+        ("Model", html.escape(model_label), ""),
+        ("Words", str(word_count), ""),
+        ("Uncertain", str(uncertain_count), " warn"),
+        ("Confidence", f"{avg_conf:.0f}%", " good"),
     ]
     boxes_html = "".join(
         f'<div class="pal-meta-box"><div class="mlabel">{label}</div>'
@@ -844,7 +849,7 @@ def render_metadata_bar(
     file_html = (
         '<div class="pal-meta-file"><div>'
         f'<div class="fname">{html.escape(filename)}</div>'
-        '<div class="fdone">✓ Procesamiento completado</div>'
+        '<div class="fdone">✓ Processing complete</div>'
         "</div></div>"
     )
     return (
@@ -875,7 +880,7 @@ async def transcribe_manuscript(file_path: str) -> tuple:
         12-tuple matching outputs_full (see component index comments below).
     """
     if file_path is None:
-        raise gr.Error("Por favor, sube una imagen del manuscrito primero.")
+        raise gr.Error("Please upload a manuscript image first.")
 
     # SEC-01/02/03: validate file type, size, strip EXIF via security intake layer.
     # file_path is a plain str — validate_and_clean accepts str (pathlib.Path internally).
@@ -899,7 +904,7 @@ async def transcribe_manuscript(file_path: str) -> tuple:
         msg = (
             "; ".join(errors)
             if errors
-            else "Procesamiento fallido. Verifica que el archivo sea válido y vuelve a intentarlo."
+            else "Processing failed. Verify the file is valid and try again."
         )
         raise gr.Error(msg)
 
@@ -979,7 +984,7 @@ def toggle_view(view: str, raw: str, cleaned: str) -> str:
     Returns:
         The appropriate text string for the Transcription Textbox.
     """
-    return raw if view == "Original" else cleaned
+    return raw if view == "Original" else cleaned  # choices: "Cleaned" | "Original"
 
 
 def reset_manuscript() -> tuple:
@@ -1027,16 +1032,16 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
   <div class="pal-logo-mark">P</div>
   <div>
     <div class="pal-header-title">Palimpsest</div>
-    <div class="pal-header-sub">Transcripción de manuscritos</div>
+    <div class="pal-header-sub">Manuscript Transcription</div>
   </div>
 </div>
 """)
         gr.HTML(
             '<div style="display:flex;justify-content:flex-end;align-items:flex-end;height:100%">'
-            '<span class="pal-adk-badge"><span class="dot"></span>ADK · 4 agentes</span></div>'
+            '<span class="pal-adk-badge"><span class="dot"></span>ADK · 4 agents</span></div>'
         )
         reset_btn = gr.Button(
-            "Nueva transcripción", visible=False, elem_classes=["btn-ghost"], scale=0
+            "New transcription", visible=False, elem_classes=["btn-ghost"], scale=0
         )
 
     raw_state = gr.State(value="")
@@ -1045,19 +1050,19 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
     with gr.Column(elem_classes=["pal-initial-col"]) as initial_section:
         gr.HTML("""
 <div class="pal-hero">
-  <h1>Sube un manuscrito para transcribir</h1>
-  <p>Restauramos la imagen, transcribimos la escritura, anotamos el contexto
-  histórico y medimos la confianza de cada palabra.</p>
+  <h1>Upload a manuscript to transcribe</h1>
+  <p>We restore the image, transcribe the handwriting, annotate the historical
+  context, and measure the confidence of every word.</p>
 </div>
 """)
         with gr.Column(elem_classes=["pal-upload-zone"]):
             file_input = gr.File(
-                label="Subir imagen de manuscrito",
+                label="Upload manuscript image",
                 file_types=[".jpg", ".jpeg", ".png"],
                 file_count="single",
                 type="filepath",
             )
-        submit_btn = gr.Button("Transcribir manuscrito", variant="primary", elem_classes=["btn-primary"])
+        submit_btn = gr.Button("Transcribe manuscript", variant="primary", elem_classes=["btn-primary"])
 
     processing_section = gr.HTML(value=PROCESSING_HTML, visible=False)
 
@@ -1067,11 +1072,11 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
         with gr.Column(visible=False, elem_classes=["pal-card", "pal-transcription-card"]) as transcription_section:
             gr.HTML(
                 '<div class="pal-sec-head"><span class="bar" style="background:#AE3B2C"></span>'
-                "<h2>Transcripción</h2></div>"
+                "<h2>Transcription</h2></div>"
             )
-            view_toggle = gr.Radio(label="Vista:", choices=["Limpiada", "Original"], value="Limpiada", elem_classes=["pal-seg-toggle"])
+            view_toggle = gr.Radio(label="View:", choices=["Cleaned", "Original"], value="Cleaned", elem_classes=["pal-seg-toggle"])
             copy_btn = gr.Button(
-                "Copiar",
+                "Copy",
                 elem_classes=["btn-ghost"],
                 scale=0,
                 size="sm",
@@ -1080,13 +1085,13 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
                 label="",
                 interactive=False,
                 lines=15,
-                placeholder="(la transcripción aparecerá aquí)",
+                placeholder="(transcription will appear here)",
             )
 
         with gr.Column(visible=False, elem_classes=["pal-card", "pal-confidence-card"]) as confidence_section:
             gr.HTML(
                 '<div class="pal-sec-head"><span class="bar" style="background:#D9952E"></span>'
-                "<h2>Mapa de confianza</h2></div>"
+                "<h2>Confidence Map</h2></div>"
             )
             confidence_html = gr.HTML(value="")
 
@@ -1142,7 +1147,7 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
         js=(
             "(v, r, c) => { "
             "const card = document.querySelector('.pal-transcription-card'); "
-            "if (card) card.classList.toggle('pal-raw-mode', v === 'Original'); "
+            "if (card) card.classList.toggle('pal-raw-mode', v === 'Original'); "  # "Original" matches choice value
             "return [v, r, c]; }"
         ),
     )
@@ -1157,8 +1162,8 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
             "if (ta) navigator.clipboard.writeText(ta.value || '').catch(() => {}); "
             "const btns = document.querySelectorAll('.pal-transcription-card button'); "
             "for (const b of btns) { "
-            "  if (b.textContent.trim() === 'Copiar' || b.textContent.trim() === 'Copiado') { "
-            "    const orig = 'Copiar'; b.textContent = 'Copiado'; "
+            "  if (b.textContent.trim() === 'Copy' || b.textContent.trim() === 'Copied') { "
+            "    const orig = 'Copy'; b.textContent = 'Copied'; "
             "    setTimeout(() => { b.textContent = orig; }, 1500); break; } } "
             "}"
         ),

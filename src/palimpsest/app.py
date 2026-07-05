@@ -1062,7 +1062,7 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
                 file_count="single",
                 type="filepath",
             )
-        submit_btn = gr.Button("Transcribe manuscript", variant="primary", elem_classes=["btn-primary"])
+        submit_btn = gr.Button("Transcribe manuscript", variant="primary", elem_classes=["btn-primary"], interactive=False)
 
     processing_section = gr.HTML(value=PROCESSING_HTML, visible=False)
 
@@ -1115,6 +1115,12 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
         initial_section,        # 11  hero + upload zone (hidden in results)
     ]
 
+    file_input.change(
+        fn=lambda f: gr.update(interactive=f is not None),
+        inputs=[file_input],
+        outputs=[submit_btn],
+    )
+
     submit_btn.click(
         fn=show_processing,
         inputs=[],
@@ -1135,6 +1141,10 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
         fn=reset_manuscript,
         inputs=[],
         outputs=outputs_full,
+    ).then(
+        fn=lambda: (None, gr.update(interactive=False)),
+        inputs=[],
+        outputs=[file_input, submit_btn],
     )
 
     view_toggle.change(

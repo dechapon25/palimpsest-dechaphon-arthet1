@@ -633,6 +633,42 @@ body::before {
 }
 @keyframes pal-appear { to { opacity: 1; } }
 @keyframes pal-spin { to { transform: rotate(360deg); } }
+
+/* ── File upload — clear/remove button visibility ───────────── */
+.pal-upload-zone button,
+.pal-upload-zone .clear-button,
+.pal-upload-zone [aria-label="Remove"],
+.pal-upload-zone [aria-label="Clear"] {
+    color: #AE3B2C !important;
+    background: transparent !important;
+    border: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+.pal-upload-zone svg { stroke: #AE3B2C !important; fill: none !important; }
+
+/* ── Gradio footer — hide locale-dependent links ────────────── */
+footer { display: none !important; }
+
+/* ── Settings / API modal — readable on parchment ───────────── */
+dialog, .gradio-modal, [role="dialog"] {
+    background: #FBF8F0 !important;
+    color: #23190F !important;
+    border: 1px solid rgba(35,25,15,0.18) !important;
+    border-radius: 12px !important;
+}
+dialog label, [role="dialog"] label,
+dialog p, [role="dialog"] p,
+dialog h3, [role="dialog"] h3,
+dialog span, [role="dialog"] span {
+    color: #23190F !important;
+}
+dialog input, [role="dialog"] input,
+dialog select, [role="dialog"] select {
+    background: #F1EADA !important;
+    color: #23190F !important;
+    border: 1px solid rgba(35,25,15,0.2) !important;
+}
 """
 
 
@@ -968,6 +1004,7 @@ async def transcribe_manuscript(file_path: str) -> tuple:
         ),
         gr.update(visible=False),                   # 10 processing_section
         gr.update(visible=False),                   # 11 initial_section (hero+upload)
+        True,                                       # 12 pipeline_success
     )
 
 
@@ -1002,24 +1039,25 @@ def reset_manuscript() -> tuple:
         "",                          # status_md (gr.HTML)
         gr.update(visible=False),    # processing_section
         gr.update(visible=True),     # initial_section (hero+upload back)
+        False,                       # pipeline_success reset
     )
 
 
-def show_processing() -> gr.update:
-    """Show the processing state card. Called before transcribe_manuscript via .then() chain."""
-    return gr.update(visible=True)
+def show_processing() -> tuple:
+    """Show processing card and hide hero/upload. Called before transcribe_manuscript."""
+    return gr.update(visible=True), gr.update(visible=False)
 
 
-def hide_processing() -> gr.update:
-    """Hide the processing state card unconditionally after transcribe_manuscript.
+def hide_processing(success: bool) -> tuple:
+    """Hide processing card; restore initial_section only on error.
 
-    Runs as the final .then() step in the submit chain. Unlike .success(),
-    .then() fires regardless of whether the preceding event succeeded or
-    raised gr.Error — so the spinner is cleared even on intake/pipeline
-    failures. On success this is a harmless second hide (transcribe_manuscript
-    already returns processing_section hidden at index 10).
+    .then() fires regardless of gr.Error, so the spinner always clears.
+    On gr.Error, transcribe_manuscript outputs are NOT applied — pipeline_success
+    stays False and initial_section stays hidden. We restore it here.
+    On success, pipeline_success=True and initial_section is already hidden
+    by transcribe_manuscript — we leave it hidden.
     """
-    return gr.update(visible=False)
+    return gr.update(visible=False), gr.update(visible=not success)
 
 
 # Gradio 6: css moved from the gr.Blocks constructor to launch() —
@@ -1046,6 +1084,7 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
 
     raw_state = gr.State(value="")
     cleaned_state = gr.State(value="")
+    pipeline_success = gr.State(value=False)  # True on success; stays False on gr.Error (output not applied)
 
     with gr.Column(elem_classes=["pal-initial-col"]) as initial_section:
         gr.HTML("""
@@ -1113,6 +1152,7 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
         status_md,              # 9
         processing_section,     # 10
         initial_section,        # 11  hero + upload zone (hidden in results)
+        pipeline_success,       # 12  True on success; stays False on gr.Error
     ]
 
     file_input.change(
@@ -1124,7 +1164,7 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
     submit_btn.click(
         fn=show_processing,
         inputs=[],
-        outputs=[processing_section],
+        outputs=[processing_section, initial_section],
     ).then(
         fn=transcribe_manuscript,
         inputs=[file_input],
@@ -1132,9 +1172,11 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
     ).then(
         # Unconditional cleanup: .then() fires even when transcribe_manuscript
         # raises gr.Error, so the processing card never stays stuck visible.
+        # pipeline_success=False on error (gr.Error skips output application),
+        # so hide_processing restores initial_section only on the error path.
         fn=hide_processing,
-        inputs=[],
-        outputs=[processing_section],
+        inputs=[pipeline_success],
+        outputs=[processing_section, initial_section],
     )
 
     reset_btn.click(

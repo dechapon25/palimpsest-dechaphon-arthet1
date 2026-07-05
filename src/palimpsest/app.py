@@ -567,10 +567,13 @@ body::before {
     font-size: 15px;
     font-weight: 500;
     font-family: 'Hanken Grotesk', system-ui, sans-serif;
-    color: #A99C86;
+    color: #6E6353;
 }
-/* Step label darkens when its stage starts (delay set inline per step) */
+/* Step label darkens when its stage starts (delay set inline per step).
+   Base color is already legible (#6E6353) so the label is readable even if
+   the animation never fires (display:none while hidden can suppress it). */
 .pal-steps li .step-label {
+    color: #6E6353;
     animation: pal-step-on 0.3s forwards;
     animation-delay: inherit;
 }
@@ -1165,10 +1168,15 @@ with gr.Blocks(title="Palimpsest — Manuscript Transcription") as demo:
         fn=show_processing,
         inputs=[],
         outputs=[processing_section, initial_section],
+        show_progress="hidden",
     ).then(
         fn=transcribe_manuscript,
         inputs=[file_input],
         outputs=outputs_full,
+        # Suppress Gradio's native loading overlay on the outputs — our custom
+        # PROCESSING_HTML card is the single source of processing feedback.
+        # Without this, users see two processing indicators (ours + Gradio's).
+        show_progress="hidden",
     ).then(
         # Unconditional cleanup: .then() fires even when transcribe_manuscript
         # raises gr.Error, so the processing card never stays stuck visible.

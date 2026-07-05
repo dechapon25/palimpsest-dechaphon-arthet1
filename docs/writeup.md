@@ -3,6 +3,7 @@
 **Kaggle AI Agents Capstone — Freestyle Track**
 **GitHub:** https://github.com/carlosapsa/palimpsest
 **Live Demo:** https://palimpsest.cpaz.es
+**Video:** <!-- TODO: paste YouTube URL after recording, e.g. https://youtu.be/XXXXXXXX -->
 
 ---
 
@@ -136,7 +137,7 @@ The **security features** (SEC-01 through SEC-04) address a real attack surface 
 
 **GitHub:** https://github.com/carlosapsa/palimpsest
 
-The Gradio UI presents all pipeline outputs on a single parchment-styled page: a results grid pairing the transcription panel (with a Limpiada/Original toggle and a copy button) with the confidence map panel, where words below the 0.95 confidence threshold receive amber highlights; historical notes rendered as entity cards in a grid below; and a metadata bar with Tiempo, Modelo, Palabras, Inciertas (words under the 0.7 threshold), and Confianza pills.
+The Gradio UI presents all pipeline outputs on a single parchment-styled page: a results grid pairing the transcription panel (with a Cleaned/Original toggle and a copy button) with the confidence map panel, where words below the 0.95 confidence threshold receive amber highlights; historical notes rendered as entity cards in a grid below; and a metadata bar with Time, Model, Words, Uncertain (words under the 0.7 threshold), and Confidence values.
 
 To test the system, visit the demo URL, click "Upload manuscript image," and select any scanned page of 18th or 19th-century Spanish handwriting. The pipeline completes in approximately 20–40 seconds depending on document length. The confidence highlight panel gives an immediate visual indication of which words the system is uncertain about — the researcher can then focus their review precisely.
 

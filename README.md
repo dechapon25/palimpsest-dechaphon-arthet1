@@ -119,15 +119,6 @@ src/palimpsest/
 - `GOOGLE_API_KEY` environment variable (Gemini API)
 - Internet access (Wikidata/Wikipedia lookups)
 
-## Status
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1. MVP Linear Pipeline | Transcription agent + intake security | ✓ Complete |
-| 2. Full Multi-Agent System | Cleaning + MCP server + context agent | ✓ Complete |
-| 3. Verification + Gradio UI | Confidence scoring + demo interface | ✓ Complete |
-| 4. Deploy + Submission | Docker + Oracle VM + Kaggle writeup + video | In progress |
-
 ## License
 
 This project was created for the Kaggle AI Agents Capstone competition.

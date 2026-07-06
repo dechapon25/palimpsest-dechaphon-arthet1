@@ -3,7 +3,7 @@
 **Kaggle AI Agents Capstone — Freestyle Track**
 **GitHub:** https://github.com/carlosapsa/palimpsest
 **Live Demo:** https://palimpsest.cpaz.es
-**Video:** <!-- TODO: paste YouTube URL after recording, e.g. https://youtu.be/XXXXXXXX -->
+**Video:** https://youtu.be/5wwpl6zADDU
 
 ---
 

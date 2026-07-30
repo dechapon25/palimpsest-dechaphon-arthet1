@@ -1,15 +1,36 @@
+<div align="center">
+
 # Palimpsest
 
-> 🏆 **1st place — Freestyle track**, [Google × Kaggle AI Agents Intensive Vibe Coding Capstone](https://www.kaggle.com/competitions/vibecoding-agents-capstone-project/hackathon-winners/freestyle) (July 2026) — out of 6,041 teams.
+### 🏆 1st Place — Freestyle Track
+**Google × Kaggle · AI Agents Intensive Vibe Coding Capstone · July 2026**
+
+[![1st Place — Freestyle Track](https://img.shields.io/badge/Kaggle_Capstone-🏆_1st_Place_Freestyle-20BEFF?style=for-the-badge&logo=kaggle&logoColor=white)](https://www.kaggle.com/competitions/vibecoding-agents-capstone-project/hackathon-winners/freestyle)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-palimpsest.cpaz.es-8B5E34?style=for-the-badge)](https://palimpsest.cpaz.es)
+[![Video](https://img.shields.io/badge/Video-5_min_walkthrough-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/5wwpl6zADDU)
+
+*Selected 1st of 6,041 teams in the Freestyle track — 12,118 entrants overall.*
+
+</div>
+
+---
 
 Multi-agent system that transcribes historical handwritten documents, cleans the text, and enriches it with historical context — built with Google ADK, Gemini, and FastMCP.
 
 A researcher uploads a scan of a difficult historical manuscript and gets back a readable, enriched transcription with uncertainty markers — in one pipeline, without paleography expertise.
 
-Built as a [Kaggle AI Agents Capstone](https://www.kaggle.com/competitions/vibecoding-agents-capstone-project) competition entry (Freestyle track), where it won 1st place.
+## The award
 
-- **Live demo:** https://palimpsest.cpaz.es
-- **Video (5 min):** https://youtu.be/5wwpl6zADDU
+Palimpsest won **1st place in the Freestyle track** of the [AI Agents: Intensive Vibe Coding Capstone](https://www.kaggle.com/competitions/vibecoding-agents-capstone-project/hackathon-winners/freestyle), run by Google and Kaggle in July 2026. The competition drew **12,118 entrants across 6,041 teams**, judged across four tracks — Agents for Good, Agents for Business, Concierge Agents, and Freestyle.
+
+The entry was submitted as *"Palimpsest — A Multi-Agent Pipeline for Historical Manuscript Transcription."*
+
+| | |
+|---|---|
+| **Live demo** | https://palimpsest.cpaz.es |
+| **Video walkthrough** (5 min) | https://youtu.be/5wwpl6zADDU |
+| **Writeup** | [`docs/writeup.md`](docs/writeup.md) |
+| **Winners page** | [Freestyle track results](https://www.kaggle.com/competitions/vibecoding-agents-capstone-project/hackathon-winners/freestyle) |
 
 ## How it works
 

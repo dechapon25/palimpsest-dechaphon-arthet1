@@ -1,10 +1,15 @@
 # Palimpsest
 
+> 🏆 **1st place — Freestyle track**, [Google × Kaggle AI Agents Intensive Vibe Coding Capstone](https://www.kaggle.com/competitions/vibecoding-agents-capstone-project/hackathon-winners/freestyle) (July 2026) — out of 6,041 teams.
+
 Multi-agent system that transcribes historical handwritten documents, cleans the text, and enriches it with historical context — built with Google ADK, Gemini, and FastMCP.
 
 A researcher uploads a scan of a difficult historical manuscript and gets back a readable, enriched transcription with uncertainty markers — in one pipeline, without paleography expertise.
 
-Built as a [Kaggle AI Agents Capstone](https://www.kaggle.com/competitions/vibecoding-agents-capstone-project) competition entry (Freestyle track).
+Built as a [Kaggle AI Agents Capstone](https://www.kaggle.com/competitions/vibecoding-agents-capstone-project) competition entry (Freestyle track), where it won 1st place.
+
+- **Live demo:** https://palimpsest.cpaz.es
+- **Video (5 min):** https://youtu.be/5wwpl6zADDU
 
 ## How it works
 

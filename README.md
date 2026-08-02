@@ -147,4 +147,13 @@ src/palimpsest/
 
 ## License
 
-This project was created for the Kaggle AI Agents Capstone competition.
+Source code and documentation are licensed under the [Apache License 2.0](LICENSE).
+
+The sample manuscript images in `data/samples/` are **not** covered by that
+license. They are third-party digitisations — largely from Spain's [Portal de
+Archivos Españoles (PARES)](https://pares.cultura.gob.es) — reproduced for
+demonstration and research. See [`data/samples/README.md`](data/samples/README.md)
+for per-file provenance and terms.
+
+See [NOTICE](NOTICE) for third-party dependency licenses and the terms of the
+external services this project queries at runtime.

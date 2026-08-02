@@ -1,3 +1,12 @@
+[project]
+name = "palimpsest"
+version = "0.7.5"
+description = "Multi-agent pipeline for transcribing historical handwritten manuscripts"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Carlos Alberto Paz Santos" }]
+
 [tool.ruff]
 target-version = "py311"
 

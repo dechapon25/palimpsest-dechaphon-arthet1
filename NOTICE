@@ -1,0 +1,45 @@
+Palimpsest
+Copyright 2026 Carlos Alberto Paz Santos
+
+This product includes software developed by Carlos Alberto Paz Santos,
+licensed under the Apache License, Version 2.0.
+
+--------------------------------------------------------------------------
+SCOPE OF THE LICENSE
+--------------------------------------------------------------------------
+
+The Apache License 2.0 in the LICENSE file covers the SOURCE CODE and
+DOCUMENTATION of this project only.
+
+It does NOT cover the sample manuscript images in `data/samples/`. Those
+are third-party digitisations reproduced here for demonstration and
+research purposes. See `data/samples/README.md` for per-file provenance
+and terms.
+
+--------------------------------------------------------------------------
+THIRD-PARTY DEPENDENCIES
+--------------------------------------------------------------------------
+
+This project depends on the following third-party packages. Each remains
+under its own license:
+
+  google-adk        Apache License 2.0
+  google-genai      Apache License 2.0
+  gradio            Apache License 2.0
+  requests          Apache License 2.0
+  Pillow            MIT-CMU / HPND
+  filetype          MIT License
+  python-dotenv     BSD 3-Clause License
+
+--------------------------------------------------------------------------
+EXTERNAL SERVICES
+--------------------------------------------------------------------------
+
+At runtime this project queries:
+
+  Google Gemini API   subject to Google's API terms of service
+  Wikidata            data available under CC0 1.0 (public domain)
+  Wikipedia REST API  content available under CC BY-SA 4.0
+
+Attribution for any Wikipedia-derived text surfaced by the Context Agent
+remains with Wikipedia and its contributors.

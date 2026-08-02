@@ -18,16 +18,26 @@ consult those conditions directly rather than relying on this file.
 
 ## Per-file provenance
 
+All sample images come from PARES. Each file carries the source watermark
+*"Archivos Estatales, https://pares.cultura.gob.es"* along the bottom edge,
+together with the Archivos Estatales logo, so attribution travels with the
+image itself. Several also show the holding archive's stamps (for example
+A.H.N. Estado) and a handwritten catalogue reference.
+
+Filenames are local to this repository — they were assigned during
+development and are not PARES catalogue identifiers. The authoritative
+reference for each page is the one visible in the scan.
+
 | File | Source | Notes |
 |---|---|---|
 | `colon_1498_15c.jpg` | PARES — Portal de Archivos Españoles | 15th-c. legal fragment concerning Christopher Columbus and the capitulations of 1492. Primary demo document. |
 | `pares_easy_18c.jpg` | PARES | 18th-c. cursive, legible baseline case |
 | `pares_hard_19c.jpg` | PARES | 19th-c. cursive, difficult case |
 | `pares_margins_18c.jpg` | PARES | 18th-c. page with marginalia |
-| `14078865.JPG` | ⚠️ To confirm | Numeric identifier suggests an archive catalogue ID; provenance not yet documented |
-| `14078879.JPG` | ⚠️ To confirm | As above |
-| `14078894.JPG` | ⚠️ To confirm | As above |
-| `18850645.jpg` | ⚠️ To confirm | As above |
+| `14078865.JPG` | PARES | Council session record, 28 January 1810; A.H.N. Estado |
+| `14078879.JPG` | PARES | Additional test page |
+| `14078894.JPG` | PARES | Additional test page |
+| `18850645.jpg` | PARES | Additional test page |
 
 ## PARES
 
